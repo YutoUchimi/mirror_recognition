@@ -1,0 +1,68 @@
+<launch>
+
+  <arg name="save_dir"
+       value="~/data/mvtk/mirror_recognition/raw_data/20181004/test"/>
+  <arg name="min_image_value" default="0.5"/>
+  <arg name="max_image_value" default="5.0"/>
+
+  <include file="$(find astra_launch)/launch/astra.launch">
+    <arg name="camera" value="camera"/>
+    <arg name="load_driver" value="true"/>
+    <arg name="debayer_processing" value="true"/>
+    <arg name="depth_registration" value="false"/>
+  </include>
+
+  <!-- ******************************************************************** -->
+  <!-- Data collection                                                      -->
+  <!-- ******************************************************************** -->
+
+  <node name="data_collection_server"
+        pkg="jsk_data" type="data_collection_server.py"
+        clear_params="true" output="screen">
+    <rosparam subst_value="true">
+      save_dir: $(arg save_dir)
+      topics:
+      - name: /camera/rgb/camera_info
+        msg_class: sensor_msgs/CameraInfo
+        fname: camera_info.yaml
+        savetype: YAML
+      - name: /camera/rgb/image_rect_color
+        msg_class: sensor_msgs/Image
+        fname: image.jpg
+        savetype: ColorImage
+      - name: /camera/depth_registered/sw_registered/image_rect
+        msg_class: sensor_msgs/Image
+        fname: depth.npz
+        savetype: DepthImage
+    </rosparam>
+  </node>
+
+  <node name="save_image_by_btn"
+        pkg="mirror_recognition" type="save_image_by_btn.py"
+        output="screen"/>
+
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn"/>
+
+  <!-- ******************************************************************** -->
+  <!-- Visualization                                                        -->
+  <!-- ******************************************************************** -->
+
+  <group ns="camera/depth_registered/sw_registered">
+    <node name="image_rect_viz"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="image_rect"/>
+      <rosparam subst_value="true">
+        gui: false
+        min_image_value: $(arg min_image_value)
+        max_image_value: $(arg max_image_value)
+        colormap: 2
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find mirror_recognition)/rvizconfig/astra.rviz"/>
+
+</launch>
