@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mirror_recognition</name>
+  <version>0.0.0</version>
+  <description>The mirror_recognition package</description>
+
+  <maintainer email="uchimi@jsk.imi.i.u-tokyo.ac.jp">Yuto Uchimi</maintainer>
+  <author email="uchimi@jsk.imi.i.u-tokyo.ac.jp">Yuto Uchimi</author>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>
