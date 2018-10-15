@@ -1,0 +1,27 @@
+<launch>
+  
+  <arg name="rviz" default="true"/>
+
+  <include file="$(find astra_launch)/launch/astra.launch">
+    <arg name="camera" value="camera"/>
+    <arg name="load_driver" value="true"/>
+    <arg name="debayer_processing" value="true"/>
+    <arg name="depth_registration" value="false"/>
+  </include>
+
+  <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
+    <arg name="INPUT_IMAGE" value="/camera/rgb/image_rect_color"/>
+    <arg name="INPUT_CLOUD" value="/camera/depth_registered/points"/>
+    <arg name="LAUNCH_MANAGER" value="true"/>
+    <arg name="manager" value="recognition_manager"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20181011-115836"/>
+    <arg name="gpu" value="0"/>
+  </include>
+
+  <group if="$(arg rviz">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/point_cloud_flipper_by_astra.rviz"/>
+  </group>
+
+</launch>

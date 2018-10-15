@@ -1,0 +1,51 @@
+<launch>
+
+  <arg name="INPUT_IMAGE"/>
+  <arg name="INPUT_CLOUD"/>
+  <arg name="LAUNCH_MANAGER"/>
+  <arg name="manager" default="recognition_manager"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/logs/20181011-115836"/>
+  <arg name="gpu" default="0"/>
+
+  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_object_segmentation.launch">
+    <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
+    <arg name="model_dir" value="$(arg model_dir)"/>
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
+
+  <group if="$(arg LAUNCH_MANAGER)">
+    <node name="$(arg manager)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen"/>
+  </group>
+
+  <node name="multi_plane_estimate"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <rosparam subst_value="true">
+      max_curvature: 0.01
+      min_size: 10000
+      estimate_normal: true
+      border_policy_ignore: false
+    </rosparam>
+  </node>
+
+  <node name="point_cloud_mirror_flipper"
+        pkg="nodelet" type="nodelet"
+        args="load mirror_recognitoin/PointCloudMirrorFlipper $(arg manager)"
+        output="screen"
+        respawm="true">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap from="~input/indices" to="multi_plane_estimate/output"/>
+    <remap from="~input/coefficients" to="multi_plane_estimate/output_coefficients"/>
+    <rosparam>
+      use_async: true
+      max_queue_size: 100
+    </rosparam>
+  </node>
+
+</launch>
