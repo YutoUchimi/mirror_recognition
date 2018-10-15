@@ -133,12 +133,12 @@ namespace mirror_recognition
       // Do flip each cloud by mirror and concatenate them
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr flipped_one_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
       pcl::transformPointCloud(*cloud_inside_one_mirror, *flipped_one_cloud, R);
-      pcl::concatenateFields(*flipped_cloud, *flipped_one_cloud, *flipped_cloud);
+      *flipped_cloud += *flipped_one_cloud;
     }
 
     // Concatenate all result
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::concatenateFields(*cloud_outside_mirror, *flipped_cloud, *output_cloud);
+    *output_cloud = *cloud_outside_mirror + *flipped_cloud;
 
     // Publish PointCloud
     sensor_msgs::PointCloud2 ros_output;
