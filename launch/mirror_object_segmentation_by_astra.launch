@@ -9,7 +9,7 @@
     <arg name="depth_registration" value="false"/>
   </include>
 
-  <include file="$(find mirror_recognition)/launch/fcn_mirror_object_segmentation.launch">
+  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_object_segmentation.launch">
     <arg name="INPUT_IMAGE" value="/camera/rgb/image_rect_color"/>
     <arg name="model_dir" value="$(find mirror_recognition)/logs/20181011-115836"/>
     <arg name="gpu" value="0"/>
