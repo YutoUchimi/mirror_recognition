@@ -41,6 +41,8 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
         self.pub_proba_object = self.advertise(
             '~output/proba/object', Image, queue_size=1)
 
+        self.xp = cuda.cupy if self.gpu >= 0 else np
+
         expected_file_set = set([
             'model.txt',
             'n_class.txt',
@@ -114,7 +116,7 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
         self.pub_proba_object.publish(proba_object_msg)
 
     def _segment(self, bgr):
-        bgr_data = np.array([bgr], dtype=np.float32)
+        bgr_data = self.xp.array([bgr], dtype=self.xp.float32)
         if self.gpu != -1:
             bgr_data = cuda.to_gpu(bgr_data, device=self.gpu)
 
