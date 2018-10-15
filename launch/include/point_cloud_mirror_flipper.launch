@@ -36,9 +36,9 @@
 
   <node name="point_cloud_mirror_flipper"
         pkg="nodelet" type="nodelet"
-        args="load mirror_recognitoin/PointCloudMirrorFlipper $(arg manager)"
+        args="load mirror_recognition/PointCloudMirrorFlipper $(arg manager)"
         output="screen"
-        respawm="true">
+        respawn="true">
     <remap from="~input" to="$(arg INPUT_CLOUD)"/>
     <remap from="~input/indices" to="multi_plane_estimate/output"/>
     <remap from="~input/coefficients" to="multi_plane_estimate/output_coefficients"/>

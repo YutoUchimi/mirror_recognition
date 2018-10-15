@@ -18,7 +18,7 @@
     <arg name="gpu" value="0"/>
   </include>
 
-  <group if="$(arg rviz">
+  <group if="$(arg rviz)">
     <node name="rviz"
           pkg="rviz" type="rviz"
           args="-d $(find mirror_recognition)/rvizconfig/point_cloud_flipper_by_astra.rviz"/>
