@@ -10,6 +10,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>jsk_recognition_msgs</depend>
+  <depend>jsk_recognition_utils</depend>
+  <depend>message_filters</depend>
+  <depend>nodelet</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+
   <export>
+    <nodelet plugin="${prefix}/plugins/nodelet/libmirror_recognition.xml"/>
   </export>
 </package>

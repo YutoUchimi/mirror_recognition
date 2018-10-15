@@ -1,0 +1,9 @@
+<library path="libmirror_recognition">
+  <class name="mirror_recognition/PointCloudMirrorFlipper"
+         type="mirror_recognition::PointCloudMirrorFlipper"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Flip pointcloud in each mirror world by mirror plane
+    </description>
+  </class>
+</library>
