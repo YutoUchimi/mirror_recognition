@@ -17,6 +17,10 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
 
+  <exec_depend>depth_image_proc</exec_depend>
+  <exec_depend>jsk_pcl_ros</exec_depend>
+  <exec_depend>jsk_pcl_ros_utils</exec_depend>
+
   <export>
     <nodelet plugin="${prefix}/plugins/nodelet/libmirror_recognition.xml"/>
   </export>
