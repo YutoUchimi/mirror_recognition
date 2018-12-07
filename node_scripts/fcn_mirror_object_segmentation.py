@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from distutils.version import LooseVersion
 import os
 import os.path as osp
 import sys
@@ -20,7 +19,6 @@ import rospy
 from sensor_msgs.msg import Image
 
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
-
 from models import FCN8sMirrorObjectSegmentation  # NOQA
 
 
@@ -29,7 +27,7 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.model_dir = rospy.get_param('~model_dir')
-        self.gpu = rospy.get_param('~gpu', -1)
+        self.gpu = rospy.get_param('~gpu', 0)
         self.bg_label = rospy.get_param('~bg_label', 0)
         self.proba_threshold = rospy.get_param('~proba_threshold', 0.5)
         self.pub_label_mirror = self.advertise(
@@ -68,16 +66,13 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
 
         model_file = osp.join(self.model_dir, 'max_mean_iu_object.npz')
         rospy.loginfo(
-            '\nLoading trained model:          {0}'.format(model_file))
+            'Loading trained model:          {0}'.format(model_file))
         S.load_npz(model_file, self.model)
         rospy.loginfo(
-            'Finished loading trained model: {0}\n'.format(model_file))
+            'Finished loading trained model: {0}'.format(model_file))
 
         if self.gpu >= 0:
-            cuda.get_device_from_id(self.gpu).use()
-            self.model.to_gpu()
-        if LooseVersion(chainer.__version__) < LooseVersion('2.0.0'):
-            self.model.train = False
+            self.model.to_gpu(self.gpu)
 
     def subscribe(self):
         sub_img = rospy.Subscriber(
@@ -92,11 +87,12 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
         br = cv_bridge.CvBridge()
         bgr_img = br.imgmsg_to_cv2(
             img_msg, desired_encoding='bgr8').astype(np.float32)
-        mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
-        bgr_img = (bgr_img - mean_bgr).transpose((2, 0, 1))
+        mean_bgr = np.array(
+            [104.00698793, 116.66876762, 122.67891434], dtype=np.float32)
+        bgr_chw = (bgr_img - mean_bgr).transpose((2, 0, 1))
 
         label_mirror, label_object, proba_mirror, proba_object = \
-            self._segment(bgr_img)
+            self._segment(bgr_chw)
         label_mirror = label_mirror.astype(np.int32)
         label_object = label_object.astype(np.int32)
         proba_mirror = proba_mirror.astype(np.float32)
@@ -116,18 +112,14 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
         self.pub_proba_object.publish(proba_object_msg)
 
     def _segment(self, bgr):
-        bgr_data = self.xp.array([bgr], dtype=self.xp.float32)
-        if self.gpu != -1:
-            bgr_data = cuda.to_gpu(bgr_data, device=self.gpu)
+        bgr_batch = self.xp.array([bgr], dtype=self.xp.float32)
+        if self.gpu >= 0:
+            bgr_batch = cuda.to_gpu(bgr_batch, device=self.gpu)
 
-        if LooseVersion(chainer.__version__) < LooseVersion('2.0.0'):
-            bgr = chainer.Variable(bgr_data, volatile=True)
-            self.model(bgr)
-        else:
-            with chainer.using_config('train', False):
-                with chainer.no_backprop_mode():
-                    bgr = chainer.Variable(bgr_data)
-                    self.model(bgr)
+        with chainer.using_config('train', False):
+            with chainer.no_backprop_mode():
+                bgr_variable = chainer.Variable(bgr_batch)
+                self.model(bgr_variable)
 
         # Get proba_img, pred_label
         proba_img_mirror = F.softmax(self.model.score_mirror)
