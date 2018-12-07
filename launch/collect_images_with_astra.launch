@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="save_dir"
-       value="~/data/mvtk/mirror_recognition/raw_data/20181004/test"/>
+       value="~/data/mvtk/mirror_recognition/raw_data/20181207/test"/>
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
 
@@ -64,5 +64,11 @@
   <node name="rviz"
         pkg="rviz" type="rviz"
         args="-d $(find mirror_recognition)/rvizconfig/astra.rviz"/>
+
+  <node name="rosconsole_overlay_text"
+        pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+        output="screen"
+        respawn="true">
+  </node>
 
 </launch>
