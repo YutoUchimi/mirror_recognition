@@ -55,7 +55,7 @@
   <!--   <remap from="~input/indices" to="label_to_cluster_indices_mirror/output"/> -->
   <!--   <remap from="~input/coefficients" to="multi_plane_estimate/output_coefficients"/> -->
   <!--   <rosparam> -->
-  <!--     use_async: true -->
+  <!--     approximate_sync: true -->
   <!--     max_queue_size: 100 -->
   <!--   </rosparam> -->
   <!-- </node> -->

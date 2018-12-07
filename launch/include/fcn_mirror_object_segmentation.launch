@@ -4,7 +4,8 @@
   <arg name="gpu" default="-1"/>
 
   <node name="fcn_mirror_object_segmentation"
-        pkg="mirror_recognition" type="fcn_mirror_object_segmentation.py">
+        pkg="mirror_recognition" type="fcn_mirror_object_segmentation.py"
+        output="screen">
     <remap from="~input" to="$(arg INPUT_IMAGE)"/>
     <rosparam command="load" file="$(find mirror_recognition)/config/mirror_names.yaml"/>
     <rosparam command="load" file="$(find mirror_recognition)/config/object_names.yaml"/>
@@ -17,22 +18,24 @@
   </node>
 
   <node name="label_image_decomposer_mirror"
-        pkg="jsk_perception" type="label_image_decomposer.py">
+        pkg="jsk_perception" type="label_image_decomposer.py"
+        respawn="true">
     <remap from="~input" to="$(arg INPUT_IMAGE)"/>
     <remap from="~input/label" to="fcn_mirror_object_segmentation/output/label/mirror"/>
     <remap from="~label_names" to="fcn_mirror_object_segmentation/mirror_names"/>
     <rosparam>
-      queue_size: 100
+      queue_size: 1000
     </rosparam>
   </node>
 
   <node name="label_image_decomposer_object"
-        pkg="jsk_perception" type="label_image_decomposer.py">
+        pkg="jsk_perception" type="label_image_decomposer.py"
+        respawn="true">
     <remap from="~input" to="$(arg INPUT_IMAGE)"/>
     <remap from="~input/label" to="fcn_mirror_object_segmentation/output/label/object"/>
     <remap from="~label_names" to="fcn_mirror_object_segmentation/object_names"/>
     <rosparam>
-      queue_size: 100
+      queue_size: 1000
     </rosparam>
   </node>
 

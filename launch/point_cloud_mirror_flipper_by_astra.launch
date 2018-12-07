@@ -1,5 +1,5 @@
 <launch>
-  
+
   <arg name="rviz" default="true"/>
 
   <include file="$(find astra_launch)/launch/astra.launch">
