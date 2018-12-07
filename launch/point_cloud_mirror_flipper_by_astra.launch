@@ -22,6 +22,12 @@
     <node name="rviz"
           pkg="rviz" type="rviz"
           args="-d $(find mirror_recognition)/rvizconfig/point_cloud_flipper_by_astra.rviz"/>
+
+    <node name="rosconsole_overlay_text"
+          pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+          output="screen"
+          respawn="true">
+    </node>
   </group>
 
 </launch>
