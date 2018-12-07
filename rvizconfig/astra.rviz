@@ -49,6 +49,35 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Class: jsk_rviz_plugin/CameraInfo
+      Enabled: true
+      Image Topic: ""
+      Name: RGBCameraInfo
+      Topic: /camera/rgb/camera_info
+      Unreliable: false
+      Value: true
+      alpha: 0.5
+      color: 85; 255; 255
+      edge color: 85; 255; 255
+      far clip: 0.100000001
+      not show side polygons: true
+      show edges: true
+      show polygons: false
+      use image: false
     - Class: rviz/Image
       Enabled: true
       Image Topic: /camera/rgb/image_rect_color
@@ -61,6 +90,21 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: true
+    - Class: jsk_rviz_plugin/CameraInfo
+      Enabled: false
+      Image Topic: ""
+      Name: DepthCameraInfo
+      Topic: /camera/depth/camera_info
+      Unreliable: false
+      Value: false
+      alpha: 0.5
+      color: 85; 255; 255
+      edge color: 85; 255; 255
+      far clip: 0.100000001
+      not show side polygons: true
+      show edges: true
+      show polygons: false
+      use image: false
     - Class: rviz/Image
       Enabled: true
       Image Topic: /camera/depth_registered/sw_registered/image_rect_viz/output
@@ -121,6 +165,15 @@ Visualization Manager:
       text size: 10
       top: 0
       width: 400
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /marker_6dof_tf_depth_to_rgb/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -146,7 +199,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.81805992
+      Distance: 1.82484782
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -164,7 +217,7 @@ Visualization Manager:
       Pitch: -1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.71540022
+      Yaw: 4.71040297
     Saved: ~
 Window Geometry:
   DepthImage:
