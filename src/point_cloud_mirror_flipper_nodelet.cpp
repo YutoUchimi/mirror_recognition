@@ -5,14 +5,14 @@
 
 #include "mirror_recognition/point_cloud_mirror_flipper.h"
 
-#include <vector>
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 #include <jsk_recognition_utils/pcl_ros_util.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/extract_indices.h>
 #include <pluginlib/class_list_macros.h>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <vector>
 
 
 namespace mirror_recognition
@@ -20,7 +20,7 @@ namespace mirror_recognition
   void PointCloudMirrorFlipper::onInit()
   {
     ConnectionBasedNodelet::onInit();
-    pnh_->param("use_async", use_async_, false);
+    pnh_->param("approximate_sync", approximate_sync_, false);
     pnh_->param("max_queue_size", max_queue_size_, 100);
     pub_ = advertise<sensor_msgs::PointCloud2>(*pnh_, "output", 1);
     onInitPostProcess();
@@ -32,7 +32,7 @@ namespace mirror_recognition
     sub_indices_.subscribe(*pnh_, "input/indices", 1);
     sub_coefficients_.subscribe(*pnh_, "input/coefficients", 1);
 
-    if (use_async_)
+    if (approximate_sync_)
     {
       async_ = boost::make_shared<message_filters::Synchronizer<ASyncPolicy> >(max_queue_size_);
       async_->connectInput(sub_input_, sub_indices_, sub_coefficients_);
