@@ -25,7 +25,7 @@ class LabeledMirrorDataset(chainer.dataset.DatasetMixin):
         'label.png',
         'label_names.txt',
         'label_viz.png',
-        ])
+    ])
 
     root_dir = osp.expanduser(
         '~/data/mvtk/mirror_recognition/labeled_mirror_dataset')
@@ -96,8 +96,7 @@ class LabeledMirrorDataset(chainer.dataset.DatasetMixin):
             if np.random.uniform() < 0.5:
                 angle = (np.random.uniform() * 180) - 90
                 image = self.rotate_image(image, angle, cv2.INTER_LINEAR)
-                label = self.rotate_image(
-                    label, angle, cv2.INTER_NEAREST)
+                label = self.rotate_image(label, angle, cv2.INTER_NEAREST)
         return image, label
 
     def rotate_image(self, in_img, angle, flags=cv2.INTER_LINEAR):
