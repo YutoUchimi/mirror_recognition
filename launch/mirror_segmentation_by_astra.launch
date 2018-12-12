@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="gpu" default="0"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/logs/20181011-115836"/>
+  <arg name="rviz" default="true"/>
+
+  <include file="$(find astra_launch)/launch/astra.launch">
+    <arg name="camera" value="camera"/>
+    <arg name="load_driver" value="true"/>
+    <arg name="debayer_processing" value="true"/>
+    <arg name="depth_registration" value="false"/>
+  </include>
+
+  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation.launch">
+    <arg name="INPUT_IMAGE" value="/camera/rgb/image_rect_color"/>
+    <arg name="model_dir" value="$(arg model_dir)"/>
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
+
+  <group if="$(arg rviz)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_by_astra.rviz"/>
+  </group>
+
+</launch>
