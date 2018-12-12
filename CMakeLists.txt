@@ -19,11 +19,11 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS thread)
 
 find_package(Eigen3)
-if(Eigen3_FOUND)
-  set(Eigen_INCLUDE_DIRS ${Eigen3_INCLUDE_DIR})
+if(EIGEN3_FOUND)
+  set(Eigen_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 else()
   find_package(Eigen REQUIRED)
-  set(Eigen_INCLUDE_DIRS ${Eigen_INCLUDE_DIR})
+  set(Eigen_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
 endif()
 
 find_package(PCL REQUIRED COMPONENTS filters)
