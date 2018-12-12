@@ -95,7 +95,10 @@ class LabeledMirrorObjectDataset(chainer.dataset.DatasetMixin):
             # 1. Color augmentation
             obj_datum = dict(img=image)
             random_state = np.random.RandomState()
-            st = lambda x: iaa.Sometimes(0.3, x)  # NOQA
+
+            def st(x):
+                return iaa.Sometimes(0.3, x)
+
             augs = [
                 st(iaa.Add([-50, 50], per_channel=True)),
                 st(iaa.InColorspace(
