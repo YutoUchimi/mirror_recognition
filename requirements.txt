@@ -1,2 +1,12 @@
+chainer
+fcn
 imgaug
-git+https://github.com/wkentaro/mvtk.git
+git+https://github.com/wkentaro/mvtk.git  # mvtk
+labelme
+matplotlib
+numpy
+opencv-python
+pandas
+pillow
+scikit-image
+tabulate
