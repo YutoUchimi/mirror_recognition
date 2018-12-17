@@ -48,9 +48,8 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
         ])
         actual_file_set = set(os.listdir(osp.expanduser(self.model_dir)))
         if not expected_file_set.issubset(actual_file_set):
-            rospy.logerr(
-                'File set does not match. Expected: {}, Actual: {}'.format(
-                    expected_file_set, actual_file_set))
+            rospy.logerr('File set does not match. Expected: {}, Actual: {}'.
+                         format(expected_file_set, actual_file_set))
 
         self._load_model()
 
@@ -65,11 +64,9 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
             self.model = FCN8sMirrorObjectSegmentation(n_class_object=n_class)
 
         model_file = osp.join(self.model_dir, 'max_mean_iu_object.npz')
-        rospy.loginfo(
-            'Loading trained model:          {0}'.format(model_file))
+        rospy.loginfo('Loading trained model:          {0}'.format(model_file))
         S.load_npz(model_file, self.model)
-        rospy.loginfo(
-            'Finished loading trained model: {0}'.format(model_file))
+        rospy.loginfo('Finished loading trained model: {0}'.format(model_file))
 
         if self.gpu >= 0:
             self.model.to_gpu(self.gpu)

@@ -30,10 +30,8 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
         self.gpu = rospy.get_param('~gpu', 0)
         self.bg_label = rospy.get_param('~bg_label', 0)
         self.proba_threshold = rospy.get_param('~proba_threshold', 0.5)
-        self.pub_label = self.advertise(
-            '~output/label', Image, queue_size=1)
-        self.pub_proba = self.advertise(
-            '~output/proba', Image, queue_size=1)
+        self.pub_label = self.advertise('~output/label', Image, queue_size=1)
+        self.pub_proba = self.advertise('~output/proba', Image, queue_size=1)
 
         self.xp = cuda.cupy if self.gpu >= 0 else np
 
@@ -44,9 +42,8 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
         ])
         actual_file_set = set(os.listdir(osp.expanduser(self.model_dir)))
         if not expected_file_set.issubset(actual_file_set):
-            rospy.logerr(
-                'File set does not match. Expected: {}, Actual: {}'.format(
-                    expected_file_set, actual_file_set))
+            rospy.logerr('File set does not match. Expected: {}, Actual: {}'.
+                         format(expected_file_set, actual_file_set))
 
         self._load_model()
 
@@ -61,11 +58,9 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
             self.model = FCN8sMirrorSegmentation(n_class=n_class)
 
         model_file = osp.join(self.model_dir, 'max_miou.npz')
-        rospy.loginfo(
-            'Loading trained model:          {0}'.format(model_file))
+        rospy.loginfo('Loading trained model:          {0}'.format(model_file))
         S.load_npz(model_file, self.model)
-        rospy.loginfo(
-            'Finished loading trained model: {0}'.format(model_file))
+        rospy.loginfo('Finished loading trained model: {0}'.format(model_file))
 
         if self.gpu >= 0:
             self.model.to_gpu(self.gpu)
@@ -120,8 +115,7 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
         pred_label = cuda.to_cpu(pred_label.data)[0]
 
         # uncertain because the probability is low
-        pred_label[
-            max_proba_img < self.proba_threshold] = self.bg_label
+        pred_label[max_proba_img < self.proba_threshold] = self.bg_label
 
         return pred_label, proba_img
 
