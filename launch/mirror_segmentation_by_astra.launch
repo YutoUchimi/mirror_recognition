@@ -21,6 +21,15 @@
     <node name="rviz"
           pkg="rviz" type="rviz"
           args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_by_astra.rviz"/>
+
+    <node name="rosconsole_overlay_text"
+          pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+          output="screen"
+          respawn="true">
+      <rosparam>
+        reverse_lines: false
+      </rosparam>
+    </node>
   </group>
 
 </launch>

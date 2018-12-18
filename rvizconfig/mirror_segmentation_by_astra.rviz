@@ -3,8 +3,7 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /MirrorLabelViz1/Status1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 853
   - Class: rviz/Selection
@@ -71,6 +70,25 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: true
+    - Align Bottom: true
+      Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: ROSConsoleOutput
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /rosconsole_overlay_text/output
+      Value: true
+      font: DejaVu Sans Mono
+      height: 400
+      left: 10
+      line width: 2
+      text size: 12
+      top: 10
+      width: 300
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
