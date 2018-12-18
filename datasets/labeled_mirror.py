@@ -195,7 +195,7 @@ class LabeledMirrorWithDepthDataset(chainer.dataset.DatasetMixin):
         # Data augmentation
         if self.aug:
             # 1. Color augmentation
-            obj_datum = dict(image=image, depth=depth)
+            obj_datum = dict(img=image)
             random_state = np.random.RandomState()
 
             def st(x):
@@ -212,7 +212,7 @@ class LabeledMirrorWithDepthDataset(chainer.dataset.DatasetMixin):
             ]
             obj_datum = next(mvtk.aug.augment_object_data(
                 [obj_datum], random_state=random_state, augmentations=augs))
-            image = obj_datum['image']
+            image = obj_datum['img']
 
             # 2. Geometric augmentation
             np.random.seed()
