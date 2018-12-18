@@ -1,6 +1,6 @@
 chainer
 fcn
-imgaug
+git+https://github.com/wkentaro/imgaug@affine_resize  # imgaug
 git+https://github.com/wkentaro/mvtk.git  # mvtk
 labelme
 matplotlib
