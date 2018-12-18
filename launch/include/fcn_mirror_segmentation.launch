@@ -20,8 +20,8 @@
         pkg="jsk_perception" type="label_image_decomposer.py"
         respawn="true">
     <remap from="~input" to="$(arg INPUT_IMAGE)"/>
-    <remap from="~input/label" to="fcn_mirror_object_segmentation/output/label"/>
-    <remap from="~label_names" to="fcn_mirror_object_segmentation/mirror_names"/>
+    <remap from="~input/label" to="fcn_mirror_segmentation/output/label"/>
+    <remap from="~label_names" to="fcn_mirror_segmentation/mirror_names"/>
     <rosparam>
       queue_size: 1000
     </rosparam>
