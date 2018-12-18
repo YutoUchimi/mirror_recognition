@@ -137,5 +137,5 @@ class LabeledMirrorDataset(chainer.dataset.DatasetMixin):
             label.astype(np.int32), img=image,
             label_names=self.class_names, alpha=0.7)
         viz = mvtk.image.tile(
-            [image, label, label], (1, 3))
+            [image, label], (1, 2))
         return mvtk.image.resize(viz, size=600 * 600)  # for small window
