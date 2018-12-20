@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 import argparse
@@ -13,6 +14,7 @@ import chainer
 from chainer import cuda
 from chainer.datasets import TransformDataset
 from chainer.training import extensions
+import cv2
 import fcn
 import numpy as np
 
@@ -25,20 +27,41 @@ from models import FCN8sMirrorSegmentationWithDepth  # NOQA
 here = osp.dirname(osp.abspath(__file__))
 
 
+def colorize_depth(depth, min_value=None, max_value=None):
+    min_value = np.nanmin(depth) if min_value is None else min_value
+    max_value = np.nanmax(depth) if max_value is None else max_value
+
+    gray_depth = depth.copy()
+    nan_mask = np.isnan(gray_depth)
+    gray_depth[nan_mask] = 0
+    gray_depth = 255 * (gray_depth - min_value) / (max_value - min_value)
+    gray_depth[gray_depth < 0] = 0
+    gray_depth[gray_depth > 255] = 255
+    gray_depth = gray_depth.astype(np.uint8)
+    colorized = cv2.applyColorMap(gray_depth, cv2.COLORMAP_JET)
+    colorized[nan_mask] = (0, 0, 0)
+
+    return colorized
+
+
 def transform(in_data):
-    rgb_img, depth, gt = in_data
+    image_rgb, depth, gt = in_data
 
     # RGB -> BGR
-    bgr_img = rgb_img[:, :, ::-1]
-    bgr_img = rgb_img.astype(np.float32)
+    image_bgr = image_rgb[:, :, ::-1]
+    image_bgr = image_rgb.astype(np.float32)
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
-    bgr_img -= mean_bgr
+    image_bgr -= mean_bgr
     # H, W, C -> C, H, W
-    bgr_img = bgr_img.transpose((2, 0, 1))
+    image_bgr = image_bgr.transpose((2, 0, 1))
 
-    depth = depth[np.newaxis, :, :]
+    # depth (H, W) -> (H, W, 3) -> (3, H, W)
+    depth_bgr = colorize_depth(depth)
+    depth_bgr = depth_bgr.astype(np.float32)
+    depth_bgr -= mean_bgr
+    depth_bgr = depth_bgr.transpose((2, 0, 1))
 
-    return bgr_img, depth, gt
+    return image_bgr, depth_bgr, gt
 
 
 def main():

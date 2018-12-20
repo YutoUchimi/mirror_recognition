@@ -22,7 +22,7 @@ class FCN8sMirrorSegmentationWithDepth(chainer.Chain):
         }
         super(FCN8sMirrorSegmentationWithDepth, self).__init__()
         with self.init_scope():
-            self.conv1_1 = L.Convolution2D(3 + 1, 64, 3, 1, 100, **kwargs)
+            self.conv1_1 = L.Convolution2D(3 + 3, 64, 3, 1, 100, **kwargs)
             self.conv1_2 = L.Convolution2D(64, 64, 3, 1, 1, **kwargs)
 
             self.conv2_1 = L.Convolution2D(64, 128, 3, 1, 1, **kwargs)
@@ -191,12 +191,12 @@ class FCN8sMirrorSegmentationWithDepth(chainer.Chain):
                 l1 = getattr(vgg16, l.name)
                 l2 = getattr(self, l.name)
                 assert l1.W.shape[0] == l2.W.shape[0]
-                assert l1.W.shape[1] == l2.W.shape[1] - 1
+                assert l1.W.shape[1] * 2 == l2.W.shape[1]
                 assert l1.W.shape[2:] == l2.W.shape[2:]
                 assert l1.b.shape == l2.b.shape
-                l2.W.data[:, :l2.W.shape[1] - 1, :, :] = l1.W.data[:, :, :, :]
-                mean_W = np.mean(l1.W.data, axis=1, keepdims=True)
-                l2.W.data[:, l2.W.shape[1] - 1::, :, :] = mean_W
+                l2.W.data[:, :l1.W.shape[1], :, :] = l1.W.data[:, :, :, :]
+                l2.W.data[:, l1.W.shape[1]:, :, :] = l1.W.data[:, :, :, :]
+                l2.b.data[...] = l1.b.data[...]
             elif l.name.startswith('conv'):
                 l1 = getattr(vgg16, l.name)
                 l2 = getattr(self, l.name)
