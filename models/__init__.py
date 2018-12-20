@@ -2,3 +2,4 @@
 from .fcn8s_mirror_depth_estimation import FCN8sMirrorDepthEstimation
 from .fcn8s_mirror_object_segmentation import FCN8sMirrorObjectSegmentation
 from .fcn8s_mirror_segmentation import FCN8sMirrorSegmentation
+from .fcn8s_mirror_segmentation_with_depth import FCN8sMirrorSegmentationWithDepth
