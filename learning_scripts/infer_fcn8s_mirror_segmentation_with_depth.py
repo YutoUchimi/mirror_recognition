@@ -102,7 +102,7 @@ class FCNMirrorSegmentationWithDepth(object):
         print('dataset length: %d' % self.data_len)
         print('n_class: %d' % self.n_class)
 
-    def _colorize_depth(depth, min_value=None, max_value=None):
+    def _colorize_depth(self, depth, min_value=None, max_value=None):
         min_value = np.nanmin(depth) if min_value is None else min_value
         max_value = np.nanmax(depth) if max_value is None else max_value
 
@@ -173,7 +173,8 @@ class FCNMirrorSegmentationWithDepth(object):
                 [gt], [pred_label], n_class=2)[2]
             print('mean IU: %lf' % miou)
 
-            # visualize label, proba
+            # visualize depth, label, proba
+            depth_rgb = self._colorize_depth(depth)[:, :, ::-1]
             gt_viz = mvtk.image.label2rgb(
                 gt, img=image_rgb,
                 label_names=self.class_names, alpha=0.7)
@@ -182,7 +183,7 @@ class FCNMirrorSegmentationWithDepth(object):
                 label_names=self.class_names, alpha=0.7)
 
             viz = mvtk.image.tile(
-                [image_rgb, depth_bgr[:, :, ::-1], pred_label_viz, gt_viz],
+                [image_rgb, depth_rgb, pred_label_viz, gt_viz],
                 shape=(2, 2))
             mvtk.image.resize(viz, size=300 * 300)
             print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
