@@ -58,12 +58,12 @@ def main():
     out = timestamp
     out = osp.join(osp.dirname(here), 'logs', out)
 
-    max_iteration = 10000
+    max_iter_epoch = 100, 'epoch'
     progress_bar_update_interval = 10  # iteration
     print_interval = 100, 'iteration'
     log_interval = 100, 'iteration'
-    test_interval = 20, 'epoch'
-    save_interval = 20, 'epoch'
+    test_interval = 10, 'epoch'
+    save_interval = 10, 'epoch'
 
     # 1. dataset
 
@@ -113,7 +113,7 @@ def main():
         iter_train, optimizer, device=gpu)
 
     trainer = chainer.training.Trainer(
-        updater, (max_iteration, 'iteration'), out=out)
+        updater, max_iter_epoch, out=out)
 
     trainer.extend(extensions.ExponentialShift("alpha", 0.99999))
 
