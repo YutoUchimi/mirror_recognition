@@ -1,0 +1,49 @@
+<launch>
+
+  <arg name="gpu" default="0"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/logs/20181221-154200"/>
+  <arg name="rviz" default="true"/>
+
+  <include file="$(find astra_launch)/launch/astra.launch">
+    <arg name="camera" value="camera"/>
+    <arg name="load_driver" value="true"/>
+    <arg name="debayer_processing" value="true"/>
+    <arg name="depth_registration" value="false"/>
+  </include>
+
+  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation_with_depth.launch">
+    <arg name="INPUT_IMAGE" value="/camera/rgb/image_rect_color"/>
+    <arg name="INPUT_DEPTH" value="/camera/depth_registered/sw_registered/image_rect"/>
+    <arg name="model_dir" value="$(arg model_dir)"/>
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
+
+  <group if="$(arg rviz)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_with_depth_by_astra.rviz"/>
+
+    <group ns="camera/depth_registered/sw_registered">
+      <node name="image_rect_viz"
+            pkg="image_view" type="image_view"
+            output="screen"
+            respawn="true">
+        <remap from="image" to="image_rect"/>
+        <rosparam>
+          gui: false
+          colormap: 2
+        </rosparam>
+      </node>
+    </group>
+
+    <node name="rosconsole_overlay_text"
+          pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+          output="screen"
+          respawn="true">
+      <rosparam>
+        reverse_lines: false
+      </rosparam>
+    </node>
+  </group>
+
+</launch>

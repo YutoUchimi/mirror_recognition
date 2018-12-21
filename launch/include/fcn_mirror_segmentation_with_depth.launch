@@ -1,0 +1,35 @@
+<launch>
+  <arg name="INPUT_IMAGE"/>
+  <arg name="INPUT_DEPTH"/>
+  <arg name="model_dir"/>
+  <arg name="gpu" default="-1"/>
+
+  <node name="fcn_mirror_segmentation_with_depth"
+        pkg="mirror_recognition" type="fcn_mirror_segmentation_with_depth.py"
+        output="screen">
+    <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+    <remap from="~input/depth" to="$(arg INPUT_DEPTH)"/>
+    <rosparam command="load" file="$(find mirror_recognition)/config/mirror_names.yaml"/>
+    <rosparam subst_value="true">
+      model_dir: $(arg model_dir)
+      gpu: $(arg gpu)
+      queue_size: 100
+      approximate_sync: true
+      slop: 0.3
+      bg_label: 0
+      proba_threshold: 0.5
+    </rosparam>
+  </node>
+
+  <node name="label_image_decomposer"
+        pkg="jsk_perception" type="label_image_decomposer.py"
+        respawn="true">
+    <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+    <remap from="~input/label" to="fcn_mirror_segmentation_with_depth/output/label"/>
+    <remap from="~label_names" to="fcn_mirror_segmentation_with_depth/mirror_names"/>
+    <rosparam>
+      queue_size: 1000
+    </rosparam>
+  </node>
+
+</launch>
