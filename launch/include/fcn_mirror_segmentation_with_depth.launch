@@ -15,7 +15,7 @@
       gpu: $(arg gpu)
       queue_size: 100
       approximate_sync: true
-      slop: 0.3
+      slop: 0.1
       bg_label: 0
       proba_threshold: 0.5
     </rosparam>

@@ -89,7 +89,6 @@ class FCNMirrorSegmentationWithDepth(ConnectionBasedTransport):
             sub.unregister()
 
     def _cb(self, img_msg, depth_msg):
-        rospy.logwarn('hogehogeho')
         br = cv_bridge.CvBridge()
         mean_bgr = np.array(
             [104.00698793, 116.66876762, 122.67891434], dtype=np.float32)
