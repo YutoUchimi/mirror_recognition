@@ -6,6 +6,7 @@ from __future__ import division
 import os
 import os.path as osp
 import sys
+import traceback
 
 import chainer
 from chainer import cuda
@@ -82,16 +83,20 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
             [104.00698793, 116.66876762, 122.67891434], dtype=np.float32)
         bgr_chw = (bgr_img - mean_bgr).transpose((2, 0, 1))
 
-        label, proba = self._segment(bgr_chw)
-        label = label.astype(np.int32)
-        proba = proba.astype(np.float32)
+        try:
+            label, proba = self._segment(bgr_chw)
+            label = label.astype(np.int32)
+            proba = proba.astype(np.float32)
 
-        label_msg = br.cv2_to_imgmsg(label, '32SC1')
-        label_msg.header = img_msg.header
-        self.pub_label.publish(label_msg)
-        proba_msg = br.cv2_to_imgmsg(proba)
-        proba_msg.header = img_msg.header
-        self.pub_proba.publish(proba_msg)
+            label_msg = br.cv2_to_imgmsg(label, '32SC1')
+            label_msg.header = img_msg.header
+            self.pub_label.publish(label_msg)
+            proba_msg = br.cv2_to_imgmsg(proba)
+            proba_msg.header = img_msg.header
+            self.pub_proba.publish(proba_msg)
+
+        except TypeError:
+            rospy.logerr(traceback.format_exc())
 
     def _segment(self, bgr):
         bgr_batch = self.xp.array([bgr], dtype=self.xp.float32)

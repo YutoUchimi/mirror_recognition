@@ -6,6 +6,7 @@ from __future__ import division
 import os
 import os.path as osp
 import sys
+import traceback
 
 import chainer
 from chainer import cuda
@@ -88,25 +89,29 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
             [104.00698793, 116.66876762, 122.67891434], dtype=np.float32)
         bgr_chw = (bgr_img - mean_bgr).transpose((2, 0, 1))
 
-        label_mirror, label_object, proba_mirror, proba_object = \
-            self._segment(bgr_chw)
-        label_mirror = label_mirror.astype(np.int32)
-        label_object = label_object.astype(np.int32)
-        proba_mirror = proba_mirror.astype(np.float32)
-        proba_object = proba_object.astype(np.float32)
+        try:
+            label_mirror, label_object, proba_mirror, proba_object = \
+                self._segment(bgr_chw)
+            label_mirror = label_mirror.astype(np.int32)
+            label_object = label_object.astype(np.int32)
+            proba_mirror = proba_mirror.astype(np.float32)
+            proba_object = proba_object.astype(np.float32)
 
-        label_mirror_msg = br.cv2_to_imgmsg(label_mirror, '32SC1')
-        label_mirror_msg.header = img_msg.header
-        self.pub_label_mirror.publish(label_mirror_msg)
-        label_object_msg = br.cv2_to_imgmsg(label_object, '32SC1')
-        label_object_msg.header = img_msg.header
-        self.pub_label_object.publish(label_object_msg)
-        proba_mirror_msg = br.cv2_to_imgmsg(proba_mirror)
-        proba_mirror_msg.header = img_msg.header
-        self.pub_proba_mirror.publish(proba_mirror_msg)
-        proba_object_msg = br.cv2_to_imgmsg(proba_object)
-        proba_object_msg.header = img_msg.header
-        self.pub_proba_object.publish(proba_object_msg)
+            label_mirror_msg = br.cv2_to_imgmsg(label_mirror, '32SC1')
+            label_mirror_msg.header = img_msg.header
+            self.pub_label_mirror.publish(label_mirror_msg)
+            label_object_msg = br.cv2_to_imgmsg(label_object, '32SC1')
+            label_object_msg.header = img_msg.header
+            self.pub_label_object.publish(label_object_msg)
+            proba_mirror_msg = br.cv2_to_imgmsg(proba_mirror)
+            proba_mirror_msg.header = img_msg.header
+            self.pub_proba_mirror.publish(proba_mirror_msg)
+            proba_object_msg = br.cv2_to_imgmsg(proba_object)
+            proba_object_msg.header = img_msg.header
+            self.pub_proba_object.publish(proba_object_msg)
+
+        except TypeError:
+            rospy.logerr(traceback.format_exc())
 
     def _segment(self, bgr):
         bgr_batch = self.xp.array([bgr], dtype=self.xp.float32)
