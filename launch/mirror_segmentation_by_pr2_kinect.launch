@@ -4,16 +4,30 @@
   <arg name="model_dir" default="$(find mirror_recognition)/logs/20181218-172955"/>
   <arg name="rviz" default="true"/>
 
+  <!-- Republish image -->
+  <group ns="kinect_head_remote">
+    <node name="republish_rgb"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen"
+          respawn="true">
+      <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+      <remap from="out" to="rgb/image_rect_color"/>
+    </node>
+  </group>
+
+  <!-- Main process -->
   <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation.launch">
     <arg name="INPUT_IMAGE" value="/kinect_head/rgb/image_rect_color"/>
     <arg name="model_dir" value="$(arg model_dir)"/>
     <arg name="gpu" value="$(arg gpu)"/>
   </include>
 
+  <!-- Visualization -->
   <group if="$(arg rviz)">
     <node name="rviz"
           pkg="rviz" type="rviz"
-          args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_by_astra.rviz"/>
+          args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_by_pr2_kinect.rviz"/>
 
     <node name="rosconsole_overlay_text"
           pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
