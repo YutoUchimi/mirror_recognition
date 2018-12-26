@@ -1,0 +1,49 @@
+<launch>
+
+  <arg name="DATA_DIR" default="~/data/mvtk/mirror_recognition/raw_data/20171207/test"/>
+  <arg name="CAMERA_FRAME" default="camera_rgb_optical_frame"/>
+  <arg name="OBJECT_FRAME" default="mirror"/>
+  <arg name="OBJECT_ID" default="e38a7ba01d45953ccb7547c95fbdff26"/>
+
+  <rosparam param="/mesh_id" subst_value="true">
+    mesh_id: $(arg OBJECT_ID)
+  </rosparam>
+
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn">
+  </node>
+
+  <node name="data_collection_server"
+        pkg="jsk_data" type="data_collection_server.py"
+        clear_params="true" output="screen">
+    <rosparam subst_value="true">
+      slop: 0.5
+      save_dir: $(arg DATA_DIR)/pose
+      topics:
+        - name: /tf_to_transform_camera_to_obj/output
+          msg_class: geometry_msgs/TransformStamped
+          fname: tf_camera_to_obj.yaml
+          savetype: YAML
+      params:
+        - key: /mesh_id
+          fname: mesh_id.yaml
+          savetype: YAML
+    </rosparam>
+  </node>
+
+  <node name="tf_to_transform_camera_to_obj"
+        pkg="jsk_topic_tools" type="tf_to_transform.py">
+    <rosparam subst_value="true">
+      parent_frame_id: $(arg CAMERA_FRAME)
+      child_frame_id: $(arg OBJECT_FRAME)
+      duration: 1
+      rate: 30
+    </rosparam>
+  </node>
+
+  <node name="save_image"
+        pkg="mirror_recognition" type="save_image_by_btn.py"
+        output="screen">
+  </node>
+
+</launch>

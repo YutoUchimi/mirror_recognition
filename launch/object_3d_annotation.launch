@@ -1,0 +1,63 @@
+<launch>
+
+  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/raw_data/20181207/test" />
+  <arg name="CAMERA_FRAME" value="camera_rgb_optical_frame"/>
+  <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26"/>
+  <arg name="OBJECT_NAME" value="mirror"/>
+  <arg name="OBJECT_FRAME" value="mirror"/>
+  <arg name="gui" default="true" />
+
+  <!-- Publish raw dataset -->
+  <include file="$(find mirror_recognition)/launch/include/publish_raw_dataset.launch">
+    <arg name="DATA_DIR" value="$(arg DATA_DIR)" />
+    <arg name="gui" value="false" if="$(arg gui)" />
+    <arg name="gui" value="true" unless="$(arg gui)" />
+  </include>
+
+  <!-- Publish mesh model -->
+  <node name="object_array_publisher"
+        pkg="jsk_recognition_msgs" type="object_array_publisher.py"
+        output="screen">
+    <remap from="~output" to="/object_array" />
+    <rosparam subst_value="true">
+      latch: true
+      objects:
+        - id: 1
+          name: $(arg OBJECT_NAME)
+          image_resources:
+            - file://$(env HOME)/data/ShapeNetCore.v2.scaled/$(arg OBJECT_ID)/images/texture0.jpg
+          mesh_resource: file://$(env HOME)/data/ShapeNetCore.v2.scaled/$(arg OBJECT_ID)/models/model_normalized_scaled.obj
+    </rosparam>
+  </node>
+
+  <!-- Interactive marker for 3D annotation -->
+  <node name="transformable_interactive_server"
+        pkg="jsk_interactive_marker" type="transformable_server_sample">
+    <rosparam subst_value="true">
+      display_interactive_manipulator: true
+      display_interactive_manipulator_only_selected: true
+      interaction_mode: 2
+    </rosparam>
+  </node>
+
+  <!-- Save mesh model pose -->
+  <include file="$(find mirror_recognition)/launch/include/save_object_pose.launch">
+    <arg name="DATA_DIR" value="$(arg DATA_DIR)" />
+    <arg name="CAMERA_FRAME" value="$(arg CAMERA_FRAME)"/>
+    <arg name="OBJECT_FRAME" value="$(arg OBJECT_FRAME)"/>
+    <arg name="OBJECT_ID" value="$(arg OBJECT_ID)"/>
+  </include>
+
+  <!-- Visualization -->
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/object_3d_annotation.rviz">
+    </node>
+    <node name="rqt_reconfigure"
+          pkg="rqt_reconfigure" type="rqt_reconfigure"
+          args="publish_raw_dataset">
+    </node>
+  </group>
+
+</launch>

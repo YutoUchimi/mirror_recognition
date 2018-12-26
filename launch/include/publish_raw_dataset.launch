@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="DATA_DIR" default="~/data/mvtk/mirror_recognition/raw_data/20181207/test" />
-  <arg name="rviz" default="true" />
+  <arg name="gui" default="true" />
 
   <node name="publish_raw_dataset"
         pkg="mirror_recognition" type="publish_raw_dataset.py"
@@ -34,7 +34,7 @@
   </group>
 
   <!-- Visualization -->
-  <group if="$(arg rviz)">
+  <group if="$(arg gui)">
     <node name="rviz"
           pkg="rviz" type="rviz"
           args="-d $(find mirror_recognition)/rvizconfig/publish_raw_dataset.rviz">
