@@ -10,6 +10,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>dynamic_reconfigure</depend>
   <depend>jsk_recognition_msgs</depend>
   <depend>jsk_recognition_utils</depend>
   <depend>jsk_topic_tools</depend>

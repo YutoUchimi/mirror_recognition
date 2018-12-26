@@ -8,6 +8,7 @@ if(CCACHE_FOUND)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   jsk_recognition_msgs
   jsk_recognition_utils
   message_filters
@@ -27,6 +28,10 @@ else()
 endif()
 
 find_package(PCL REQUIRED COMPONENTS filters)
+
+generate_dynamic_reconfigure_options(
+  cfg/PublishRawDataset.cfg
+)
 
 catkin_package(
   INCLUDE_DIRS

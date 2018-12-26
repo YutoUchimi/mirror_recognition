@@ -1,0 +1,58 @@
+<launch>
+
+  <arg name="DATA_DIR" default="~/data/mvtk/mirror_recognition/raw_data/20181207/test" />
+  <arg name="rviz" default="true" />
+
+  <node name="publish_raw_dataset"
+        pkg="mirror_recognition" type="publish_raw_dataset.py"
+        args="$(arg DATA_DIR)"
+        output="screen">
+    <remap from="~output/rgb/camera_info" to="camera/rgb/camera_info" />
+    <remap from="~output/rgb/image_rect_color" to="camera/rgb/image_rect_color" />
+    <remap from="~output/depth_registered/camera_info" to="camera/depth_registered/camera_info" />
+    <remap from="~output/depth_registered/image_rect" to="camera/depth_registered/image_rect" />
+  </node>
+
+  <group ns="camera/depth_registered">
+    <node name="image_rect_view"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="image_rect" />
+      <rosparam>
+        gui: false
+        colormap: 2
+        min_image_value: 0.5
+        max_image_value: 5.0
+      </rosparam>
+    </node>
+  </group>
+
+  <group ns="camera">
+    <node name="point_cloud_xyzrgb"
+          pkg="nodelet" type="nodelet"
+          args="standalone depth_image_proc/point_cloud_xyzrgb">
+    </node>
+  </group>
+
+  <!-- Visualization -->
+  <group if="$(arg rviz)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/publish_raw_dataset.rviz">
+    </node>
+
+    <node name="rosconsole_overlay_text"
+          pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+          output="screen"
+          respawn="true">
+      <rosparam>
+        reverse_lines: false
+      </rosparam>
+    </node>
+
+    <node name="rqt_reconfigure"
+          pkg="rqt_reconfigure" type="rqt_reconfigure"
+          args="publish_raw_dataset">
+    </node>
+  </group>
+
+</launch>
