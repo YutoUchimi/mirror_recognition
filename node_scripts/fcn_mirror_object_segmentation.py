@@ -65,7 +65,7 @@ class FCNMirrorObjectSegmentation(ConnectionBasedTransport):
             self.model = FCN8sMirrorObjectSegmentation(n_class_object=n_class)
 
         model_file = osp.join(self.model_dir, 'max_mean_iu_object.npz')
-        rospy.loginfo('Loading trained model:          {0}'.format(model_file))
+        rospy.loginfo('Start loading trained model:    {0}'.format(model_file))
         S.load_npz(model_file, self.model)
         rospy.loginfo('Finished loading trained model: {0}'.format(model_file))
 

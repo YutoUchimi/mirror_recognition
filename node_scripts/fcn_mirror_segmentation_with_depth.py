@@ -61,7 +61,7 @@ class FCNMirrorSegmentationWithDepth(ConnectionBasedTransport):
             self.model = FCN8sMirrorSegmentationWithDepth(n_class=n_class)
 
         model_file = osp.join(self.model_dir, 'max_miou.npz')
-        rospy.loginfo('Loading trained model:          {0}'.format(model_file))
+        rospy.loginfo('Start loading trained model:    {0}'.format(model_file))
         S.load_npz(model_file, self.model)
         rospy.loginfo('Finished loading trained model: {0}'.format(model_file))
 
