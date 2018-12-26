@@ -96,7 +96,7 @@ class FCNMirrorSegmentation(ConnectionBasedTransport):
             self.pub_proba.publish(proba_msg)
 
         except TypeError:
-            rospy.logerr(traceback.format_exc())
+            rospy.logdebug(traceback.format_exc())
 
     def _segment(self, bgr):
         bgr_batch = self.xp.array([bgr], dtype=self.xp.float32)

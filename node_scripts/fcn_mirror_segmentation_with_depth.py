@@ -115,7 +115,7 @@ class FCNMirrorSegmentationWithDepth(ConnectionBasedTransport):
             self.pub_proba.publish(proba_msg)
 
         except TypeError:
-            rospy.logerr(traceback.format_exc())
+            rospy.logdebug(traceback.format_exc())
 
     def _colorize_depth(self, depth, min_value=None, max_value=None):
         min_value = np.nanmin(depth) if min_value is None else min_value
