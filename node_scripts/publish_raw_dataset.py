@@ -65,7 +65,8 @@ class PublishRawDataset(object):
         self.pub_depth_cam_info = rospy.Publisher(
             '~output/depth_registered/camera_info', CameraInfo, queue_size=1)
 
-        self._timer = rospy.Timer(rospy.Duration(1. / 30), self._timer_cb)
+        rate = rospy.get_param('~rate', 30.0)
+        self._timer = rospy.Timer(rospy.Duration(1. / rate), self._timer_cb)
 
     def _config_cb(self, config, level):
         self._stamp = config.scene_idx
