@@ -10,7 +10,7 @@ import fcn
 import numpy as np
 
 
-class FCN8sMirrorDepthEstimation(chainer.Chain):
+class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
     # 0.5 < depth < 5.0
     min_depth = 0.5
@@ -26,7 +26,7 @@ class FCN8sMirrorDepthEstimation(chainer.Chain):
             'initialW': chainer.initializers.Zero(),
             'initial_bias': chainer.initializers.Zero(),
         }
-        super(FCN8sMirrorDepthEstimation, self).__init__()
+        super(FCN8sMirrorSegmentationDepthEstimation, self).__init__()
         with self.init_scope():
             self.conv1_1 = L.Convolution2D(3 + 3, 64, 3, 1, 100, **kwargs)
             self.conv1_2 = L.Convolution2D(64, 64, 3, 1, 1, **kwargs)
