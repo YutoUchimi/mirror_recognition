@@ -34,6 +34,8 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
     root_dir = osp.expanduser(
         '~/data/mvtk/mirror_recognition/mirror_3d_annotated_dataset')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
+    min_value = 0.5
+    max_value = 5.0
 
     def __init__(self, split, aug=False):
         assert split in ['train', 'test']
@@ -163,13 +165,13 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         print('[%04d] %s' % (index, '>' * 75))
         print('image_shape: %s' % repr(image.shape))
         print('[%04d] %s' % (index, '<' * 75))
-        depth = mvtk.image.colorize_depth(
-            depth, min_value=None, max_value=None)
+        depth_viz = mvtk.image.colorize_depth(
+            depth, min_value=self.min_value, max_value=self.max_value)
         label = mvtk.image.label2rgb(
             label.astype(np.int32), img=image,
             label_names=self.class_names, alpha=0.7)
-        depth_gt = mvtk.image.colorize_depth(
-            depth_gt, min_value=None, max_value=None)
+        depth_gt_viz = mvtk.image.colorize_depth(
+            depth_gt, min_value=self.min_value, max_value=self.max_value)
         viz = mvtk.image.tile(
-            [image, depth, label, depth_gt], (2, 2))
+            [image, depth_viz, label, depth_gt_viz], (2, 2))
         return mvtk.image.resize(viz, size=600 * 600)  # for small window
