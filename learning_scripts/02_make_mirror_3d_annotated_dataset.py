@@ -104,12 +104,14 @@ def save_generated_depth_gt(depth_file, cam_info_file, tf_camera_to_obj_file,
     assert mask_mirror.dtype == np.bool
 
     # Get min(raw_depth, gen_depth) in mirror region
-    depth_gt = depth.copy()
+    depth_nan2inf = depth.copy()
+    depth_nan2inf[np.isnan(depth_nan2inf)] = np.inf
     depth_mirror_nan2inf = depth_mirror.copy()
     depth_mirror_nan2inf[np.isnan(depth_mirror_nan2inf)] = np.inf
+    depth_gt = depth.copy()
     depth_gt[mask_mirror] = np.minimum(
+        depth_nan2inf[mask_mirror],
         depth_mirror_nan2inf[mask_mirror],
-        depth[mask_mirror],
     )
     depth_gt = depth_gt.astype(np.float32)
 
