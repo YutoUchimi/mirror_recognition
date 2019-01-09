@@ -12,36 +12,6 @@ from labelme import utils
 import PIL.Image
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'src_dir', type=str,
-        help='Input data directory. It must have [split] dirs.')
-    parser.add_argument(
-        'dst_dir', type=str,
-        help='Output dataset directory.')
-    parser.add_argument(
-        'split', choices=['train', 'test'],
-        help='Choose split you want to make dataset of.')
-    args = parser.parse_args()
-
-    raw_split_dir = osp.join(args.src_dir, args.split)
-    out_split_dir = osp.join(args.dst_dir, args.split)
-    for stamp_dir in sorted(os.listdir(raw_split_dir)):
-        json_file = osp.join(raw_split_dir, stamp_dir, 'image.json')
-        if not osp.exists(json_file):
-            print('{} does not exist.'.format(json_file))
-            exit(1)
-
-        out_dir = osp.join(out_split_dir, stamp_dir)
-        if not osp.exists(out_dir):
-            os.makedirs(out_dir)
-
-        save_image_from_json(json_file, out_dir)
-        save_label_from_json(json_file, out_dir)
-        print('Saved to: %s' % out_dir)
-
-
 def save_image_from_json(json_file, out_dir):
     data = json.load(open(json_file))
 
@@ -92,5 +62,39 @@ def save_label_from_json(json_file, out_dir):
             f.write(lbl_name + '\n')
 
 
+def main(src_dir, dst_dir, split):
+    raw_split_dir = osp.join(src_dir, split)
+    out_split_dir = osp.join(dst_dir, split)
+    for stamp_dir in sorted(os.listdir(raw_split_dir)):
+        json_file = osp.join(raw_split_dir, stamp_dir, 'image.json')
+        if not osp.exists(json_file):
+            print('{} does not exist.'.format(json_file))
+            exit(1)
+
+        out_dir = osp.join(out_split_dir, stamp_dir)
+        if not osp.exists(out_dir):
+            os.makedirs(out_dir)
+
+        save_image_from_json(json_file, out_dir)
+        save_label_from_json(json_file, out_dir)
+        print('Saved to: %s' % out_dir)
+
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'src_dir', type=str,
+        help='Input annotating data directory. It must have [split] dirs.')
+    parser.add_argument(
+        'dst_dir', type=str,
+        help='Output dataset directory.')
+    parser.add_argument(
+        'split', choices=['train', 'test'],
+        help='Choose split you want to make dataset of.')
+
+    args = parser.parse_args()
+    src_dir = args.src_dir
+    dst_dir = args.dst_dir
+
+    for split in ['train', 'test']:
+        main(src_dir, dst_dir, split)
