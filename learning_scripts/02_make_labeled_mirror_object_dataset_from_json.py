@@ -90,14 +90,11 @@ def main(src_dir, dst_dir, split):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'src_dir', type=str,
+        '-s', '--src_dir', type=str, required=True,
         help='Input data directory. It must have [split] dirs.')
     parser.add_argument(
-        'dst_dir', type=str,
+        '-d', '--dst_dir', type=str, required=True,
         help='Output dataset directory.')
-    parser.add_argument(
-        'split', choices=['train', 'test'],
-        help='Choose split you want to make dataset of.')
 
     args = parser.parse_args()
     src_dir = args.src_dir
