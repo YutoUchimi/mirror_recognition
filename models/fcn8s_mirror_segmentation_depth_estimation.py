@@ -221,7 +221,12 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         ]
         score_depth = h  # 1/1
 
-        return score_depth
+        # (-inf, inf) -> (0, 1) -> (min_depth, max_depth)
+        h = F.sigmoid(score_depth)
+        depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
+        self.depth_pred = depth_pred
+
+        return depth_pred
 
     def compute_loss_label(self, score_label, label_gt):
         # Segmentation loss
@@ -230,12 +235,8 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         return seg_loss
 
-    def compute_loss_depth(self, score_depth, label_gt, depth_gt):
+    def compute_loss_depth(self, depth_pred, label_gt, depth_gt):
         assert label_gt.dtype == self.xp.int32
-
-        # (-inf, inf) -> (0, 1) -> (min_depth, max_depth)
-        h = F.sigmoid(score_depth)
-        depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
 
         # Whole region
         keep_regardless_mask = ~self.xp.isnan(depth_gt)
@@ -264,9 +265,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         return reg_loss
 
-    def compute_loss(self, score_label, score_depth, label_gt, depth_gt):
+    def compute_loss(self, score_label, depth_pred, label_gt, depth_gt):
         seg_loss = self.compute_loss_label(score_label, label_gt)
-        reg_loss = self.compute_loss_depth(score_depth, label_gt, depth_gt)
+        reg_loss = self.compute_loss_depth(depth_pred, label_gt, depth_gt)
 
         # Loss
         # XXX: What is proper loss function?
@@ -283,8 +284,6 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         label_gt = cuda.to_cpu(label_gt)[0]
         label_pred = cuda.to_cpu(F.argmax(score_label, axis=1).data)[0]
         depth_gt = cuda.to_cpu(depth_gt)[0]
-        h = F.sigmoid(score_depth)
-        depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
         depth_pred = cuda.to_cpu(depth_pred.data)[0]
 
         # Evaluate Mean IU
@@ -329,15 +328,15 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
     def __call__(self, bgr, depth_bgr, label_gt=None, depth_gt=None):
         score_label, pool3, pool4, fc7 = self.predict_label(bgr, depth_bgr)
-        score_depth = self.predict_depth(depth_bgr, pool3, pool4, fc7)
+        depth_pred = self.predict_depth(depth_bgr, pool3, pool4, fc7)
         self.score_label = score_label
-        self.score_depth = score_depth
+        self.depth_pred = depth_pred
 
         if label_gt is None or depth_gt is None:
             assert not chainer.config.train
             return
 
-        loss = self.compute_loss(score_label, score_depth, label_gt, depth_gt)
+        loss = self.compute_loss(score_label, depth_pred, label_gt, depth_gt)
 
         return loss
 

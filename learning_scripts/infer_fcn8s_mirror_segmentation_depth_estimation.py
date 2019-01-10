@@ -243,9 +243,7 @@ class FCNMirrorSegmentationDepthEstimation(object):
         proba_img = F.transpose(proba_img, (0, 2, 3, 1))
         max_proba_img = F.max(proba_img, axis=-1)
         pred_label = F.argmax(self.model.score_label, axis=1)
-        pred_depth = F.sigmoid(self.model.score_depth)
-        pred_depth = pred_depth * (self.max_value - self.min_value)
-        pred_depth += self.min_value
+        pred_depth = self.model.depth_pred
 
         # squeeze batch axis, gpu -> cpu
         max_proba_img = cuda.to_cpu(max_proba_img.data)[0]
