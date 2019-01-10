@@ -270,7 +270,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         # Loss
         # XXX: What is proper loss function?
-        coef = [1, 10]
+        coef = [1, 1]
         loss = coef[0] * seg_loss + coef[1] * reg_loss
         if self.xp.isnan(float(loss.data)):
             raise ValueError('Loss is nan.')
