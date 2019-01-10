@@ -237,21 +237,23 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         h = F.sigmoid(score_depth)
         depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
 
+        # Whole region
         keep_regardless_mask = ~self.xp.isnan(depth_gt)
         if self.xp.sum(keep_regardless_mask) == 0:
             depth_loss_regardless_mask = 0
         else:
             depth_loss_regardless_mask = F.mean_squared_error(
-                depth_pred[keep_regardless_mask],
+                depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]],
                 depth_gt[keep_regardless_mask])
 
+        # Only masked region
         keep_only_mask = self.xp.logical_and(
             label_gt > 0, ~self.xp.isnan(depth_gt))
         if self.xp.sum(keep_only_mask) == 0:
             depth_loss_only_mask = 0
         else:
             depth_loss_only_mask = F.mean_squared_error(
-                depth_pred[keep_only_mask],
+                depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]],
                 depth_gt[keep_only_mask])
 
         # Regression loss
@@ -264,7 +266,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
     def compute_loss(self, score_label, score_depth, label_gt, depth_gt):
         seg_loss = self.compute_loss_label(score_label, label_gt)
-        reg_loss = self.compute_loss_depth(score_depth, depth_gt)
+        reg_loss = self.compute_loss_depth(score_depth, label_gt, depth_gt)
 
         # Loss
         # XXX: What is proper loss function?
@@ -283,7 +285,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         depth_gt = cuda.to_cpu(depth_gt)[0]
         h = F.sigmoid(score_depth)
         depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
-        depth_pred = cuda.to_cpu(depth_pred)[0]
+        depth_pred = cuda.to_cpu(depth_pred.data)[0]
 
         # Evaluate Mean IU
         miou = fcn.utils.label_accuracy_score(
@@ -294,7 +296,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         for thresh in [0.01, 0.03, 0.10, 0.30, 1.00]:
             t_lbl_fg = label_gt > 0
             p_lbl_fg = label_pred > 0
-            if np.sum(t_lbl_fg) == 0:
+            if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
+                acc = 1.0
+            elif np.sum(t_lbl_fg) == 0:
                 acc = np.nan
             else:
                 # {TP and (|error| < thresh)} / (TP or FP or FN)
