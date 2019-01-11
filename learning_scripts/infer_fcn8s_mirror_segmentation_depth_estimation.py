@@ -131,6 +131,11 @@ class FCNMirrorSegmentationDepthEstimation(object):
         # H, W, C -> C, H, W
         image_bgr = image_bgr.transpose((2, 0, 1))
 
+        # depth -> depth_nan2zero: (H, W) -> (1, H, W)
+        depth_nan2zero = depth.copy()
+        depth_nan2zero[np.isnan(depth_nan2zero)] = 0.0
+        depth_nan2zero = depth_nan2zero[np.newaxis, :, :]
+
         # depth (H, W) -> (H, W, 3) -> (3, H, W)
         depth_bgr = self._colorize_depth(
             depth, min_value=self.min_value, max_value=self.max_value)
@@ -138,7 +143,7 @@ class FCNMirrorSegmentationDepthEstimation(object):
         depth_bgr -= mean_bgr
         depth_bgr = depth_bgr.transpose((2, 0, 1))
 
-        return image_bgr, depth_bgr, label_gt, depth_gt
+        return image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt
 
     def summarizing_process(self):
         print('========================================================')
@@ -148,9 +153,10 @@ class FCNMirrorSegmentationDepthEstimation(object):
         id = 0
         for id in range(self.data_len):
             image_rgb, depth, label_gt, depth_gt = self.dataset[id]
-            image_bgr, depth_bgr, label_gt, depth_gt = self._transform(
-                image_rgb, depth, label_gt, depth_gt)
-            pred_label, pred_depth = self._segment(image_bgr, depth_bgr)
+            image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt = \
+                self._transform(image_rgb, depth, label_gt, depth_gt)
+            pred_label, pred_depth = self._segment(
+                image_bgr, depth_nan2zero, depth_bgr)
             pred_label = pred_label.astype(np.int32)
 
             # evaluate mean IU
@@ -170,9 +176,10 @@ class FCNMirrorSegmentationDepthEstimation(object):
             print('id: %d' % id)
 
             image_rgb, depth, label_gt, depth_gt = self.dataset[id]
-            image_bgr, depth_bgr, label_gt, depth_gt = self._transform(
-                image_rgb, depth, label_gt, depth_gt)
-            pred_label, pred_depth = self._segment(image_bgr, depth_bgr)
+            image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt = \
+                self._transform(image_rgb, depth, label_gt, depth_gt)
+            pred_label, pred_depth = self._segment(
+                image_bgr, depth_nan2zero, depth_bgr)
             pred_label = pred_label.astype(np.int32)
 
             # evaluate mean IU
@@ -217,26 +224,32 @@ class FCNMirrorSegmentationDepthEstimation(object):
             else:
                 continue
 
-    def _segment(self, image_bgr, depth_bgr):
+    def _segment(self, image_bgr, depth, depth_bgr):
         image_bgr_data = np.array([image_bgr], dtype=np.float32)
+        depth_data = np.array([depth], dtype=np.float32)
         depth_bgr_data = np.array([depth_bgr], dtype=np.float32)
         if self.gpu != -1:
             image_bgr_data = cuda.to_gpu(image_bgr_data, device=self.gpu)
+            depth_data = cuda.to_gpu(depth_data, device=self.gpu)
             depth_bgr_data = cuda.to_gpu(depth_bgr_data, device=self.gpu)
 
         if LooseVersion(chainer.__version__) < LooseVersion('2.0.0'):
             image_bgr_variable = chainer.Variable(
                 image_bgr_data, volatile=True)
+            depth_variable = chainer.Variable(
+                depth_data, volatile=True)
             depth_bgr_variable = chainer.Variable(
                 depth_bgr_data, volatile=True)
-            self.model(image_bgr_variable, depth_bgr_variable, None, None)
+            self.model(image_bgr_variable, depth_variable, depth_bgr_variable,
+                       None, None)
         else:
             with chainer.using_config('train', False):
                 with chainer.no_backprop_mode():
                     image_bgr_variable = chainer.Variable(image_bgr_data)
+                    depth_variable = chainer.Variable(depth_data)
                     depth_bgr_variable = chainer.Variable(depth_bgr_data)
-                    self.model(
-                        image_bgr_variable, depth_bgr_variable, None, None)
+                    self.model(image_bgr_variable, depth_variable,
+                               depth_bgr_variable, None, None)
 
         # Get proba_img, pred_label, pred_depth
         proba_img = F.softmax(self.model.score_label)

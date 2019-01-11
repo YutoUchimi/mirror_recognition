@@ -45,6 +45,8 @@ def colorize_depth(depth, min_value=None, max_value=None):
 
 
 def transform(in_data):
+    min_value = 0.5
+    max_value = 5.0
     image_rgb, depth, label_gt, depth_gt = in_data
 
     # RGB -> BGR
@@ -55,13 +57,19 @@ def transform(in_data):
     # H, W, C -> C, H, W
     image_bgr = image_bgr.transpose((2, 0, 1))
 
-    # depth (H, W) -> (H, W, 3) -> (3, H, W)
-    depth_bgr = colorize_depth(depth, min_value=0.5, max_value=5.0)
+    # depth -> depth_nan2zero: (H, W) -> (1, H, W)
+    depth_nan2zero = depth.copy()
+    depth_nan2zero[np.isnan(depth_nan2zero)] = 0.0
+    depth_nan2zero = depth_nan2zero[np.newaxis, :, :]
+
+    # depth -> depth_bgr: (H, W) -> (H, W, 3) -> (3, H, W)
+    depth_bgr = colorize_depth(
+        depth, min_value=min_value, max_value=max_value)
     depth_bgr = depth_bgr.astype(np.float32)
     depth_bgr -= mean_bgr
     depth_bgr = depth_bgr.transpose((2, 0, 1))
 
-    return image_bgr, depth_bgr, label_gt, depth_gt
+    return image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt
 
 
 def main():
@@ -103,9 +111,9 @@ def main():
     dataset_valid_transformed = TransformDataset(dataset_valid, transform)
 
     iter_train = chainer.iterators.MultiprocessIterator(
-        dataset_train_transformed, batch_size=1, shared_mem=10 ** 7)
+        dataset_train_transformed, batch_size=1, shared_mem=10 ** 8)
     iter_valid = chainer.iterators.MultiprocessIterator(
-        dataset_valid_transformed, batch_size=1, shared_mem=10 ** 7,
+        dataset_valid_transformed, batch_size=1, shared_mem=10 ** 8,
         repeat=False, shuffle=False)
 
     # 2. model
@@ -187,17 +195,13 @@ def main():
         'main/seg_loss',
         'main/reg_loss',
         'main/miou',
-        'main/depth_acc<0.01',
         'main/depth_acc<0.03',
         'main/depth_acc<0.10',
         'main/depth_acc<0.30',
-        'main/depth_acc<1.00',
         'validation/main/miou',
-        'validation/main/depth_acc<0.01',
         'validation/main/depth_acc<0.03',
         'validation/main/depth_acc<0.10',
         'validation/main/depth_acc<0.30',
-        'validation/main/depth_acc<1.00'
     ]), trigger=print_interval)
 
     trainer.extend(

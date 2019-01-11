@@ -35,6 +35,9 @@ def main():
     train_depth_acc_030 = []
     train_depth_acc_100 = []
 
+    val_loss = []
+    val_seg_loss = []
+    val_reg_loss = []
     val_miou = []
     val_depth_acc_001 = []
     val_depth_acc_003 = []
@@ -92,6 +95,12 @@ def main():
             else:
                 train_depth_acc_100.append(0.0)
 
+        if 'epoch' in tmp and 'validation/main/loss' in tmp:
+            val_loss.append(tmp['validation/main/loss'])
+        if 'epoch' in tmp and 'validation/main/seg_loss' in tmp:
+            val_seg_loss.append(tmp['validation/main/seg_loss'])
+        if 'epoch' in tmp and 'validation/main/reg_loss' in tmp:
+            val_reg_loss.append(tmp['validation/main/reg_loss'])
         if 'epoch' in tmp and 'validation/main/miou' in tmp:
             val_miou.append(tmp['validation/main/miou'])
         if 'epoch' in tmp and 'validation/main/depth_acc<0.01' in tmp:
@@ -116,6 +125,9 @@ def main():
     fig02 = plt.subplot2grid((2, 5), (0, 2))
     fig03 = plt.subplot2grid((2, 5), (0, 3))
     fig04 = plt.subplot2grid((2, 5), (0, 4))
+    fig10 = plt.subplot2grid((2, 5), (1, 0))
+    fig11 = plt.subplot2grid((2, 5), (1, 1))
+    fig12 = plt.subplot2grid((2, 5), (1, 2))
     fig13 = plt.subplot2grid((2, 5), (1, 3))
     fig14 = plt.subplot2grid((2, 5), (1, 4))
 
@@ -152,6 +164,24 @@ def main():
     fig04.set_xlabel('iteration [-]')
     fig04.set_ylabel('depth accuracy [-]')
     fig04.grid(True)
+
+    fig10.plot(epoch, val_loss)
+    fig10.set_title('validation/main/loss')
+    fig10.set_xlabel('epoch [-]')
+    fig10.set_ylabel('loss [-]')
+    fig10.grid(True)
+
+    fig11.plot(epoch, val_seg_loss)
+    fig11.set_title('validation/main/seg_loss')
+    fig11.set_xlabel('epoch [-]')
+    fig11.set_ylabel('loss [-]')
+    fig11.grid(True)
+
+    fig12.plot(epoch, val_reg_loss)
+    fig12.set_title('validation/main/reg_loss')
+    fig12.set_xlabel('epoch [-]')
+    fig12.set_ylabel('loss [-]')
+    fig12.grid(True)
 
     fig13.plot(epoch, val_miou)
     fig13.set_title('validation/main/miou')

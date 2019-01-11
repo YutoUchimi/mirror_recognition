@@ -80,6 +80,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
             self.upscore_pool4_depth = L.Deconvolution2D(
                 1, 1, 4, 2, 0, nobias=True,
                 initialW=fcn.initializers.UpsamplingDeconvWeight())
+            self.conv1_1_depth = L.Convolution2D(1, 32, 3, 1, 1, **kwargs)
+            self.conv1_2_depth = L.Convolution2D(32, 32, 3, 1, 1, **kwargs)
+            self.conv1_3_depth = L.Convolution2D(32, 1, 3, 1, 1, **kwargs)
 
     def predict_label(self, bgr, depth_bgr):
         h = F.concat((bgr, depth_bgr), axis=1)
@@ -165,7 +168,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         return score_label, pool3, pool4, pool5
 
-    def predict_depth(self, depth_bgr, pool3, pool4, pool5):
+    def predict_depth(self, depth, pool3, pool4, pool5):
         h = F.relu(self.fc6_depth(pool5))
         h = F.dropout(h, ratio=0.5)
         fc6_depth = h  # 1/32
@@ -216,14 +219,23 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         h = upscore8_depth[
             :, :,
-            31:31 + depth_bgr.shape[2],
-            31:31 + depth_bgr.shape[3]
+            31:31 + depth.shape[2],
+            31:31 + depth.shape[3]
         ]
-        score_depth = h  # 1/1
+        upscore8c_depth = h  # 1/1
+
+        h = F.relu(self.conv1_1_depth(depth))
+        h = F.relu(self.conv1_2_depth(h))
+        h = F.relu(self.conv1_3_depth(h))
+        conv1_depth = h
+
+        h = upscore8c_depth + conv1_depth
+        score_depth = h
 
         # (-inf, inf) -> (0, 1) -> (min_depth, max_depth)
         h = F.sigmoid(score_depth)
-        depth_pred = h * (self.max_depth - self.min_depth) + self.min_depth
+        h = h * (self.max_depth - self.min_depth) + self.min_depth
+        depth_pred = h
         self.depth_pred = depth_pred
 
         return depth_pred
@@ -326,9 +338,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         return loss
 
-    def __call__(self, bgr, depth_bgr, label_gt=None, depth_gt=None):
+    def __call__(self, bgr, depth, depth_bgr, label_gt=None, depth_gt=None):
         score_label, pool3, pool4, fc7 = self.predict_label(bgr, depth_bgr)
-        depth_pred = self.predict_depth(depth_bgr, pool3, pool4, fc7)
+        depth_pred = self.predict_depth(depth, pool3, pool4, fc7)
         self.score_label = score_label
         self.depth_pred = depth_pred
 
@@ -360,7 +372,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
                 l2.W.data[:, :l1.W.shape[1], :, :] = l1.W.data[...]
                 l2.W.data[:, l1.W.shape[1]:, :, :] = l1.W.data[...]
                 l2.b.data[...] = l1.b.data[...]
-            elif l.name.startswith('conv'):
+            elif l.name.startswith('conv') and hasattr(vgg16, l.name):
                 l1 = getattr(vgg16, l.name)
                 l2 = getattr(self, l.name)
                 assert l1.W.shape == l2.W.shape
