@@ -257,9 +257,12 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         if self.xp.sum(keep_regardless_mask) == 0:
             depth_loss_regardless_mask = 0
         else:
-            depth_loss_regardless_mask = F.mean_squared_error(
-                depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]],
-                depth_gt[keep_regardless_mask])
+            # depth_loss_regardless_mask = F.mean_squared_error(
+            #     depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]],
+            #     depth_gt[keep_regardless_mask])
+            depth_loss_regardless_mask = F.sum(F.log(F.cosh(
+                depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]] -
+                depth_gt[keep_regardless_mask])))
 
         # Only masked region
         keep_only_mask = self.xp.logical_and(
@@ -267,9 +270,12 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         if self.xp.sum(keep_only_mask) == 0:
             depth_loss_only_mask = 0
         else:
-            depth_loss_only_mask = F.mean_squared_error(
-                depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]],
-                depth_gt[keep_only_mask])
+            # depth_loss_only_mask = F.mean_squared_error(
+            #     depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]],
+            #     depth_gt[keep_only_mask])
+            depth_loss_only_mask = F.sum(F.log(F.cosh(
+                depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]] -
+                depth_gt[keep_only_mask])))
 
         # Regression loss
         # XXX: What is proper loss function?
