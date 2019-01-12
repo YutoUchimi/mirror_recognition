@@ -80,7 +80,8 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
             self.upscore_pool4_depth = L.Deconvolution2D(
                 1, 1, 4, 2, 0, nobias=True,
                 initialW=fcn.initializers.UpsamplingDeconvWeight())
-            self.conv1_1_depth = L.Convolution2D(1, 32, 3, 1, 1, **kwargs)
+            self.conv1_1_depth = L.Convolution2D(
+                1 + n_class, 32, 3, 1, 1, **kwargs)
             self.conv1_2_depth = L.Convolution2D(32, 32, 3, 1, 1, **kwargs)
             self.conv1_3_depth = L.Convolution2D(32, 1, 3, 1, 1, **kwargs)
 
@@ -168,7 +169,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         return score_label, pool3, pool4, pool5
 
-    def predict_depth(self, depth, pool3, pool4, pool5):
+    def predict_depth(self, depth, pool3, pool4, pool5, score_label):
         h = F.relu(self.fc6_depth(pool5))
         h = F.dropout(h, ratio=0.5)
         fc6_depth = h  # 1/32
@@ -224,10 +225,11 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         ]
         upscore8c_depth = h  # 1/1
 
-        h = F.relu(self.conv1_1_depth(depth))
+        h = F.concat((depth, score_label), axis=1)
+        h = F.relu(self.conv1_1_depth(h))
         h = F.relu(self.conv1_2_depth(h))
         h = F.relu(self.conv1_3_depth(h))
-        conv1_depth = h
+        conv1_depth = h  # 1/1
 
         h = upscore8c_depth + conv1_depth
         score_depth = h
@@ -339,8 +341,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         return loss
 
     def __call__(self, bgr, depth, depth_bgr, label_gt=None, depth_gt=None):
-        score_label, pool3, pool4, fc7 = self.predict_label(bgr, depth_bgr)
-        depth_pred = self.predict_depth(depth, pool3, pool4, fc7)
+        score_label, pool3, pool4, pool5 = self.predict_label(bgr, depth_bgr)
+        depth_pred = self.predict_depth(
+            depth, pool3, pool4, pool5, score_label)
         self.score_label = score_label
         self.depth_pred = depth_pred
 
