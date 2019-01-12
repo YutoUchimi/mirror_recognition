@@ -82,8 +82,11 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
                 initialW=fcn.initializers.UpsamplingDeconvWeight())
             self.conv1_1_depth = L.Convolution2D(
                 1 + n_class, 32, 3, 1, 1, **kwargs)
+            self.batch_norm1 = L.BatchNormalization(32)
             self.conv1_2_depth = L.Convolution2D(32, 32, 3, 1, 1, **kwargs)
+            self.batch_norm2 = L.BatchNormalization(32)
             self.conv1_3_depth = L.Convolution2D(32, 1, 3, 1, 1, **kwargs)
+            self.batch_norm3 = L.BatchNormalization(1)
 
     def predict_label(self, bgr, depth_bgr):
         h = F.concat((bgr, depth_bgr), axis=1)
@@ -226,9 +229,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         upscore8c_depth = h  # 1/1
 
         h = F.concat((depth, score_label), axis=1)
-        h = F.relu(self.conv1_1_depth(h))
-        h = F.relu(self.conv1_2_depth(h))
-        h = F.relu(self.conv1_3_depth(h))
+        h = F.relu(self.batch_norm1(self.conv1_1_depth(h)))
+        h = F.relu(self.batch_norm2(self.conv1_2_depth(h)))
+        h = F.relu(self.batch_norm3(self.conv1_3_depth(h)))
         conv1_depth = h  # 1/1
 
         h = upscore8c_depth + conv1_depth
@@ -257,12 +260,10 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         if self.xp.sum(keep_regardless_mask) == 0:
             depth_loss_regardless_mask = 0
         else:
-            # depth_loss_regardless_mask = F.mean_squared_error(
-            #     depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]],
-            #     depth_gt[keep_regardless_mask])
             depth_loss_regardless_mask = F.sum(F.log(F.cosh(
                 depth_pred[keep_regardless_mask[self.xp.newaxis, :, :, :]] -
                 depth_gt[keep_regardless_mask])))
+            depth_loss_regardless_mask /= depth_gt.shape[1] * depth_gt.shape[2]
 
         # Only masked region
         keep_only_mask = self.xp.logical_and(
@@ -270,12 +271,10 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         if self.xp.sum(keep_only_mask) == 0:
             depth_loss_only_mask = 0
         else:
-            # depth_loss_only_mask = F.mean_squared_error(
-            #     depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]],
-            #     depth_gt[keep_only_mask])
             depth_loss_only_mask = F.sum(F.log(F.cosh(
                 depth_pred[keep_only_mask[self.xp.newaxis, :, :, :]] -
                 depth_gt[keep_only_mask])))
+            depth_loss_only_mask /= depth_gt.shape[1] * depth_gt.shape[2]
 
         # Regression loss
         # XXX: What is proper loss function?
