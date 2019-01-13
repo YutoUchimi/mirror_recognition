@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import argparse
 from distutils.version import LooseVersion
+import io
 import os.path as osp
 import sys
 
@@ -15,8 +16,10 @@ import chainer.functions as F
 import chainer.serializers as S
 import cv2
 import fcn
+import matplotlib.pyplot as plt
 import mvtk
 import numpy as np
+import PIL.Image
 
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
@@ -145,28 +148,79 @@ class FCNMirrorSegmentationDepthEstimation(object):
 
         return image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt
 
+    def get_miou(self, label_gt, pred_label):
+        miou = fcn.utils.label_accuracy_score(
+            [label_gt], [pred_label], n_class=2)[2]
+        return miou
+
+    def get_depth_accs(self, label_gt, depth_gt, pred_label, pred_depth):
+        depth_accs = []
+        for thresh in [0.01, 0.03, 0.10, 0.30, 1.00]:
+            t_lbl_fg = label_gt > 0
+            p_lbl_fg = pred_label > 0
+            if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
+                acc = 1.0
+            elif np.sum(t_lbl_fg) == 0:
+                acc = np.nan
+            else:
+                # {TP and (|error| < thresh)} / (TP or FP or FN)
+                depth_gt_cp = np.copy(depth_gt)
+                depth_gt_cp[np.isnan(depth_gt_cp)] = np.inf
+                numer = np.sum(
+                    np.logical_and(
+                        np.logical_and(t_lbl_fg, p_lbl_fg),
+                        np.abs(depth_gt_cp - pred_depth) < thresh)
+                )
+                denom = np.sum(np.logical_or(t_lbl_fg, p_lbl_fg))
+                acc = 1.0 * numer / denom
+            depth_accs.append([thresh, acc])
+        depth_accs = np.array(depth_accs)
+
+        return depth_accs
+
     def summarizing_process(self):
         print('========================================================')
         print('Summary of segmentation and depth accuracy')
 
         sum_miou = 0.0
+        sum_depth_acc_001 = 0.0
+        sum_depth_acc_003 = 0.0
+        sum_depth_acc_010 = 0.0
+        sum_depth_acc_030 = 0.0
+        sum_depth_acc_100 = 0.0
         id = 0
         for id in range(self.data_len):
             image_rgb, depth, label_gt, depth_gt = self.dataset[id]
             image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt = \
                 self._transform(image_rgb, depth, label_gt, depth_gt)
-            pred_label, pred_depth = self._segment(
+            pred_label, pred_depth = self._predict(
                 image_bgr, depth_nan2zero, depth_bgr)
             pred_label = pred_label.astype(np.int32)
 
-            # evaluate mean IU
-            miou = fcn.utils.label_accuracy_score(
-                [label_gt], [pred_label], n_class=2)[2]
+            miou = self.get_miou(label_gt, pred_label)
+            depth_accs = self.get_depth_accs(
+                label_gt, depth_gt, pred_label, pred_depth)
+
             sum_miou += miou
+            sum_depth_acc_001 += depth_accs[0, 1]
+            sum_depth_acc_003 += depth_accs[1, 1]
+            sum_depth_acc_010 += depth_accs[2, 1]
+            sum_depth_acc_030 += depth_accs[3, 1]
+            sum_depth_acc_100 += depth_accs[4, 1]
 
         ave_miou = sum_miou / self.data_len
+        ave_depth_acc_001 = sum_depth_acc_001 / self.data_len
+        ave_depth_acc_003 = sum_depth_acc_003 / self.data_len
+        ave_depth_acc_010 = sum_depth_acc_010 / self.data_len
+        ave_depth_acc_030 = sum_depth_acc_030 / self.data_len
+        ave_depth_acc_100 = sum_depth_acc_100 / self.data_len
 
-        print('mean IU: %lf' % ave_miou)
+        print('mean IU: {}'.format(ave_miou))
+        print('depth_acc<0.01: {}'.format(ave_depth_acc_001))
+        print('depth_acc<0.03: {}'.format(ave_depth_acc_003))
+        print('depth_acc<0.10: {}'.format(ave_depth_acc_010))
+        print('depth_acc<0.30: {}'.format(ave_depth_acc_030))
+        print('depth_acc<1.00: {}'.format(ave_depth_acc_100))
         print('========================================================\n')
 
     def process(self):
@@ -178,14 +232,20 @@ class FCNMirrorSegmentationDepthEstimation(object):
             image_rgb, depth, label_gt, depth_gt = self.dataset[id]
             image_bgr, depth_nan2zero, depth_bgr, label_gt, depth_gt = \
                 self._transform(image_rgb, depth, label_gt, depth_gt)
-            pred_label, pred_depth = self._segment(
+            pred_label, pred_depth = self._predict(
                 image_bgr, depth_nan2zero, depth_bgr)
             pred_label = pred_label.astype(np.int32)
 
-            # evaluate mean IU
-            miou = fcn.utils.label_accuracy_score(
-                [label_gt], [pred_label], n_class=2)[2]
+            miou = self.get_miou(label_gt, pred_label)
+            depth_accs = self.get_depth_accs(
+                label_gt, depth_gt, pred_label, pred_depth)
+
             print('mean IU: %lf' % miou)
+            print('depth_acc<0.01: {}'.format(depth_accs[0, 1]))
+            print('depth_acc<0.03: {}'.format(depth_accs[1, 1]))
+            print('depth_acc<0.10: {}'.format(depth_accs[2, 1]))
+            print('depth_acc<0.30: {}'.format(depth_accs[3, 1]))
+            print('depth_acc<1.00: {}'.format(depth_accs[4, 1]))
 
             # visualize depth, label, proba
             depth_rgb = self._colorize_depth(
@@ -201,12 +261,28 @@ class FCNMirrorSegmentationDepthEstimation(object):
             pred_depth_viz = self._colorize_depth(
                 pred_depth, self.min_value, self.max_value)[:, :, ::-1]
 
+            # Show depth accuracy graph
+            plt.plot(depth_accs[:, 0], depth_accs[:, 1])
+            plt.title('Rate of pixel-wise depth accuracy')
+            plt.xlabel('Depth error threshold [m]')
+            plt.ylabel('Pixel rate [-]')
+            plt.xlim(-0.01, 1.01)
+            plt.ylim(-0.1, 1.1)
+            plt.grid()
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png')
+            plt.close()
+            buf.seek(0)
+            plot_img = np.asarray(PIL.Image.open(buf))
+            buf.close()
+
             viz = mvtk.image.tile(
-                [image_rgb, pred_label_viz, label_gt_viz,
-                 depth_rgb, pred_depth_viz, depth_gt_viz],
-                shape=(2, 3))
+                [image_rgb, pred_label_viz, label_gt_viz, plot_img,
+                 depth_rgb, pred_depth_viz, depth_gt_viz, plot_img],
+                shape=(2, 4))
             mvtk.image.resize(viz, size=300 * 300)
             print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+
             viz = cv2.resize(viz, None, None, fx=0.7, fy=0.7)
             cv2.namedWindow('viz')
             cv2.moveWindow('viz', 0, 0)
@@ -224,7 +300,7 @@ class FCNMirrorSegmentationDepthEstimation(object):
             else:
                 continue
 
-    def _segment(self, image_bgr, depth, depth_bgr):
+    def _predict(self, image_bgr, depth, depth_bgr):
         image_bgr_data = np.array([image_bgr], dtype=np.float32)
         depth_data = np.array([depth], dtype=np.float32)
         depth_bgr_data = np.array([depth_bgr], dtype=np.float32)
