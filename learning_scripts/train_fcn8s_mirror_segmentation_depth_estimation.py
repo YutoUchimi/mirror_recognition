@@ -162,12 +162,6 @@ def main():
     with open(osp.join(out, 'n_class.txt'), 'w') as f:
         f.write(str(n_class))
 
-    # trainer.extend(
-    #     extensions.snapshot_object(
-    #         model,
-    #         savefun=chainer.serializers.save_npz,
-    #         filename='iter_{.updater.iteration}.npz'),
-    #     trigger=save_interval)
     trainer.extend(
         extensions.snapshot_object(
             model,
@@ -175,6 +169,13 @@ def main():
             filename='max_miou.npz'),
         trigger=chainer.training.triggers.MaxValueTrigger(
             'validation/main/miou', save_interval))
+    trainer.extend(
+        extensions.snapshot_object(
+            model,
+            savefun=chainer.serializers.save_npz,
+            filename='max_depth_acc.npz'),
+        trigger=chainer.training.triggers.MaxValueTrigger(
+            'validation/main/depth_acc<0.10', save_interval))
 
     trainer.extend(
         extensions.dump_graph(
