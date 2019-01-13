@@ -76,7 +76,7 @@ def main():
 
         index_best_train = df_train['main/depth_acc<0.03'].idxmax()
         index_best_val = df_val['validation/main/depth_acc<0.03'].idxmax()
-        sort_column = 10
+        sort_column = 11
 
         warnings.filterwarnings('ignore', category=UnicodeWarning)
         row_best_train = df_train.ix[index_best_train]
