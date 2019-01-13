@@ -311,7 +311,8 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         # Evaluate Depth Accuracy
         depth_acc = {}
-        for thresh in [0.01, 0.03, 0.10, 0.30, 1.00]:
+        for thresh in [0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20,
+                       0.25, 0.30, 0.40, 0.50, 0.70, 1.00]:
             t_lbl_fg = label_gt > 0
             p_lbl_fg = label_pred > 0
             if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
@@ -337,9 +338,19 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
             'reg_loss': reg_loss,
             'miou': miou,
             'depth_acc<0.01': depth_acc['0.01'],
+            'depth_acc<0.02': depth_acc['0.02'],
             'depth_acc<0.03': depth_acc['0.03'],
+            'depth_acc<0.04': depth_acc['0.04'],
+            'depth_acc<0.05': depth_acc['0.05'],
+            'depth_acc<0.07': depth_acc['0.07'],
             'depth_acc<0.10': depth_acc['0.10'],
+            'depth_acc<0.15': depth_acc['0.15'],
+            'depth_acc<0.20': depth_acc['0.20'],
+            'depth_acc<0.25': depth_acc['0.25'],
             'depth_acc<0.30': depth_acc['0.30'],
+            'depth_acc<0.40': depth_acc['0.40'],
+            'depth_acc<0.50': depth_acc['0.50'],
+            'depth_acc<0.70': depth_acc['0.70'],
             'depth_acc<1.00': depth_acc['1.00'],
         }, self)
 
