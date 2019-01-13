@@ -86,7 +86,6 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
             self.conv1_2_depth = L.Convolution2D(32, 32, 3, 1, 1, **kwargs)
             self.batch_norm2 = L.BatchNormalization(32)
             self.conv1_3_depth = L.Convolution2D(32, 1, 3, 1, 1, **kwargs)
-            self.batch_norm3 = L.BatchNormalization(1)
 
     def predict_label(self, bgr, depth_bgr):
         h = F.concat((bgr, depth_bgr), axis=1)
@@ -231,7 +230,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         h = F.concat((depth, score_label), axis=1)
         h = F.relu(self.batch_norm1(self.conv1_1_depth(h)))
         h = F.relu(self.batch_norm2(self.conv1_2_depth(h)))
-        h = F.relu(self.batch_norm3(self.conv1_3_depth(h)))
+        h = self.conv1_3_depth(h)
         conv1_depth = h  # 1/1
 
         h = upscore8c_depth + conv1_depth
