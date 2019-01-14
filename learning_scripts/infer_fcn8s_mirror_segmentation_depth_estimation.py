@@ -76,7 +76,8 @@ class FCNMirrorSegmentationDepthEstimation(object):
         self.process()
 
     def load_model(self):
-        model_file = osp.join(self.data_dir, 'max_miou.npz')
+        # model_file = osp.join(self.data_dir, 'max_miou.npz')
+        model_file = osp.join(self.data_dir, 'max_depth_acc.npz')
         with open(osp.join(self.data_dir, 'model.txt'), 'r') as f:
             model_name = f.readline().rstrip()
         with open(osp.join(self.data_dir, 'n_class.txt'), 'r') as f:
@@ -155,7 +156,8 @@ class FCNMirrorSegmentationDepthEstimation(object):
 
     def get_depth_accs(self, label_gt, depth_gt, pred_label, pred_depth):
         depth_accs = []
-        for thresh in [0.01, 0.03, 0.10, 0.30, 1.00]:
+        for thresh in [0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20,
+                       0.25, 0.30, 0.40, 0.50, 0.70, 1.00]:
             t_lbl_fg = label_gt > 0
             p_lbl_fg = pred_label > 0
             if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
@@ -203,10 +205,10 @@ class FCNMirrorSegmentationDepthEstimation(object):
 
             sum_miou += miou
             sum_depth_acc_001 += depth_accs[0, 1]
-            sum_depth_acc_003 += depth_accs[1, 1]
-            sum_depth_acc_010 += depth_accs[2, 1]
-            sum_depth_acc_030 += depth_accs[3, 1]
-            sum_depth_acc_100 += depth_accs[4, 1]
+            sum_depth_acc_003 += depth_accs[2, 1]
+            sum_depth_acc_010 += depth_accs[6, 1]
+            sum_depth_acc_030 += depth_accs[10, 1]
+            sum_depth_acc_100 += depth_accs[14, 1]
 
         ave_miou = sum_miou / self.data_len
         ave_depth_acc_001 = sum_depth_acc_001 / self.data_len
@@ -242,10 +244,10 @@ class FCNMirrorSegmentationDepthEstimation(object):
 
             print('mean IU: %lf' % miou)
             print('depth_acc<0.01: {}'.format(depth_accs[0, 1]))
-            print('depth_acc<0.03: {}'.format(depth_accs[1, 1]))
-            print('depth_acc<0.10: {}'.format(depth_accs[2, 1]))
-            print('depth_acc<0.30: {}'.format(depth_accs[3, 1]))
-            print('depth_acc<1.00: {}'.format(depth_accs[4, 1]))
+            print('depth_acc<0.03: {}'.format(depth_accs[2, 1]))
+            print('depth_acc<0.10: {}'.format(depth_accs[6, 1]))
+            print('depth_acc<0.30: {}'.format(depth_accs[10, 1]))
+            print('depth_acc<1.00: {}'.format(depth_accs[14, 1]))
 
             # visualize depth, label, proba
             depth_rgb = self._colorize_depth(
