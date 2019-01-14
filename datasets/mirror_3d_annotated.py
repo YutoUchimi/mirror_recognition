@@ -112,8 +112,15 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
                 [obj_datum], random_state=random_state, augmentations=augs))
             image = obj_datum['img']
 
-            # 2. Geometric augmentation
+            # 2. Depth noise
             np.random.seed()
+            if np.random.uniform() < 0.3:
+                noise_rate = np.random.uniform() * 0.25 + 0.05
+                depth[
+                    np.random.rand(depth.shape[0], depth.shape[1]) < noise_rate
+                ] = np.nan
+
+            # 3. Geometric augmentation
             if np.random.uniform() < 0.5:
                 image = np.fliplr(image)
                 depth = np.fliplr(depth)
