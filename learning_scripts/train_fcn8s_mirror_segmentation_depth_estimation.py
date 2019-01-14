@@ -95,8 +95,8 @@ def main():
     progress_bar_update_interval = 10  # iteration
     print_interval = 100, 'iteration'
     log_interval = 100, 'iteration'
-    test_interval = 10, 'epoch'
-    save_interval = 10, 'epoch'
+    test_interval = 5, 'epoch'
+    save_interval = 5, 'epoch'
 
     # 1. dataset
 
