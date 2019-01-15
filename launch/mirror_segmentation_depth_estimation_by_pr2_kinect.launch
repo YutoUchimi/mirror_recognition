@@ -37,8 +37,8 @@
     <node name="rviz"
           pkg="rviz" type="rviz"
           args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_with_depth_by_pr2_kinect.rviz"/>
-          <!-- args="-d $(find mirror_recognition)/rvizconfig/mirror_segmentation_depth_estimation_by_pr2_kinect.rviz"/> -->
 
+    <!-- Visualize input depth image -->
     <group ns="kinect_head_remote/depth_registered/hw_registered">
       <node name="image_rect_viz"
             pkg="image_view" type="image_view"
@@ -52,12 +52,13 @@
       </node>
     </group>
 
+    <!-- Visualize output depth image -->
     <group ns="fcn_mirror_segmentation_depth_estimation/output">
-      <node name="depth_viz"
+      <node name="depth_inpainted_viz"
             pkg="image_view" type="image_view"
             output="screen"
             respawn="true">
-        <remap from="image" to="depth"/>
+        <remap from="image" to="depth_inpainted"/>
         <rosparam>
           gui: false
           colormap: 2
@@ -73,8 +74,19 @@
           colormap: 2
         </rosparam>
       </node>
+      <node name="depth_pred_labeled_viz"
+            pkg="image_view" type="image_view"
+            output="screen"
+            respawn="true">
+        <remap from="image" to="depth_pred_labeled"/>
+        <rosparam>
+          gui: false
+          colormap: 2
+        </rosparam>
+      </node>
     </group>
 
+    <!-- ROS console output -->
     <node name="rosconsole_overlay_text"
           pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
           output="screen"
