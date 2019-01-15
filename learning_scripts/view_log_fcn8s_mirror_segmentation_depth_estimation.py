@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 import argparse
 import json
 import os.path as osp
@@ -119,6 +121,8 @@ def main():
     # train_loss = train_loss[do_not_show_before:]
     # train_miou = train_miou[do_not_show_before:]
 
+    iteration2epoch = [x * epoch[-1] / iteration[-1] for x in iteration]
+
     fig = plt.figure(figsize=(20, 6))
     fig00 = plt.subplot2grid((2, 5), (0, 0))
     fig01 = plt.subplot2grid((2, 5), (0, 1))
@@ -131,63 +135,81 @@ def main():
     fig13 = plt.subplot2grid((2, 5), (1, 3))
     fig14 = plt.subplot2grid((2, 5), (1, 4))
 
-    fig00.plot(iteration, train_loss)
+    fig00.plot(iteration2epoch, train_loss)
     fig00.set_title('main/loss')
-    fig00.set_xlabel('iteration [-]')
+    fig00.set_xlabel('epoch [-]')
     fig00.set_ylabel('loss [-]')
     fig00.grid(True)
+    fig00.set_xlim(left=0, right=epoch[-1])
+    fig00.set_ylim(bottom=0.0)
 
-    fig01.plot(iteration, train_seg_loss)
+    fig01.plot(iteration2epoch, train_seg_loss)
     fig01.set_title('main/seg_loss')
-    fig01.set_xlabel('iteration [-]')
+    fig01.set_xlabel('epoch [-]')
     fig01.set_ylabel('loss [-]')
     fig01.grid(True)
+    fig01.set_xlim(left=0, right=epoch[-1])
+    fig01.set_ylim(bottom=0.0)
 
-    fig02.plot(iteration, train_reg_loss)
+    fig02.plot(iteration2epoch, train_reg_loss)
     fig02.set_title('main/reg_loss')
-    fig02.set_xlabel('iteration [-]')
+    fig02.set_xlabel('epoch [-]')
     fig02.set_ylabel('loss [-]')
     fig02.grid(True)
+    fig02.set_xlim(left=0, right=epoch[-1])
+    fig02.set_ylim(bottom=0.0)
 
-    fig03.plot(iteration, train_miou)
+    fig03.plot(iteration2epoch, train_miou)
     fig03.set_title('main/miou')
-    fig03.set_xlabel('iteration [-]')
+    fig03.set_xlabel('epoch [-]')
     fig03.set_ylabel('Mean IoU [-]')
     fig03.grid(True)
+    fig03.set_xlim(left=0, right=epoch[-1])
+    fig03.set_ylim(bottom=0.0, top=1.0)
 
-    fig04.plot(iteration, train_depth_acc_001)
-    fig04.plot(iteration, train_depth_acc_003)
-    fig04.plot(iteration, train_depth_acc_010)
-    fig04.plot(iteration, train_depth_acc_030)
-    fig04.plot(iteration, train_depth_acc_100)
+    fig04.plot(iteration2epoch, train_depth_acc_001)
+    fig04.plot(iteration2epoch, train_depth_acc_003)
+    fig04.plot(iteration2epoch, train_depth_acc_010)
+    fig04.plot(iteration2epoch, train_depth_acc_030)
+    fig04.plot(iteration2epoch, train_depth_acc_100)
     fig04.set_title('main/depth_acc<?.??')
-    fig04.set_xlabel('iteration [-]')
+    fig04.set_xlabel('epoch [-]')
     fig04.set_ylabel('depth accuracy [-]')
     fig04.grid(True)
+    fig04.set_xlim(left=0, right=epoch[-1])
+    fig04.set_ylim(bottom=0.0, top=1.0)
 
     fig10.plot(epoch, val_loss)
     fig10.set_title('validation/main/loss')
     fig10.set_xlabel('epoch [-]')
     fig10.set_ylabel('loss [-]')
     fig10.grid(True)
+    fig10.set_xlim(left=0, right=epoch[-1])
+    fig10.set_ylim(bottom=0.0)
 
     fig11.plot(epoch, val_seg_loss)
     fig11.set_title('validation/main/seg_loss')
     fig11.set_xlabel('epoch [-]')
     fig11.set_ylabel('loss [-]')
     fig11.grid(True)
+    fig11.set_xlim(left=0, right=epoch[-1])
+    fig11.set_ylim(bottom=0.0)
 
     fig12.plot(epoch, val_reg_loss)
     fig12.set_title('validation/main/reg_loss')
     fig12.set_xlabel('epoch [-]')
     fig12.set_ylabel('loss [-]')
     fig12.grid(True)
+    fig12.set_xlim(left=0, right=epoch[-1])
+    fig12.set_ylim(bottom=0.0)
 
     fig13.plot(epoch, val_miou)
     fig13.set_title('validation/main/miou')
     fig13.set_xlabel('epoch [-]')
     fig13.set_ylabel('Mean IoU [-]')
     fig13.grid(True)
+    fig13.set_xlim(left=0, right=epoch[-1])
+    fig13.set_ylim(bottom=0.0, top=1.0)
 
     fig14.plot(epoch, val_depth_acc_001)
     fig14.plot(epoch, val_depth_acc_003)
@@ -198,6 +220,8 @@ def main():
     fig14.set_xlabel('epoch [-]')
     fig14.set_ylabel('depth accuracy [-]')
     fig14.grid(True)
+    fig14.set_xlim(left=0, right=epoch[-1])
+    fig14.set_ylim(bottom=0.0, top=1.0)
 
     fig.tight_layout()
     fig.show()
