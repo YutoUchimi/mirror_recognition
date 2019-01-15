@@ -25,9 +25,11 @@ public:
   typedef message_filters::sync_policies::ExactTime<
     sensor_msgs::PointCloud2,
     jsk_recognition_msgs::ClusterPointIndices,
+    jsk_recognition_msgs::ClusterPointIndices,
     jsk_recognition_msgs::ModelCoefficientsArray> SyncPolicy;
   typedef message_filters::sync_policies::ApproximateTime<
     sensor_msgs::PointCloud2,
+    jsk_recognition_msgs::ClusterPointIndices,
     jsk_recognition_msgs::ClusterPointIndices,
     jsk_recognition_msgs::ModelCoefficientsArray> ASyncPolicy;
 
@@ -39,8 +41,9 @@ protected:
   virtual void subscribe();
   virtual void unsubscribe();
   virtual void flip(const sensor_msgs::PointCloud2::ConstPtr& input,
-                    const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices,
-                    const jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr& coefficients);
+                    const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& mirror_indices,
+                    const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& plane_indices,
+                    const jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr& plane_coefficients);
 
   ////////////////////////////////////////////////
   // ROS variables
@@ -48,8 +51,9 @@ protected:
   boost::mutex mutex_;
   ros::Publisher pub_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_input_;
-  message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_indices_;
-  message_filters::Subscriber<jsk_recognition_msgs::ModelCoefficientsArray> sub_coefficients_;
+  message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_mirror_indices_;
+  message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_plane_indices_;
+  message_filters::Subscriber<jsk_recognition_msgs::ModelCoefficientsArray> sub_plane_coefficients_;
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> > sync_;
   boost::shared_ptr<message_filters::Synchronizer<ASyncPolicy> > async_;
 
