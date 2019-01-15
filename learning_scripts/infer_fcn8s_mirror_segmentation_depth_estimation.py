@@ -238,6 +238,10 @@ class FCNMirrorSegmentationDepthEstimation(object):
                 image_bgr, depth_nan2zero, depth_bgr)
             pred_label = pred_label.astype(np.int32)
 
+            # Inpaint depth image
+            inpainted_depth = depth.copy()
+            inpainted_depth[pred_label > 0] = pred_depth[pred_label > 0]
+
             miou = self.get_miou(label_gt, pred_label)
             depth_accs = self.get_depth_accs(
                 label_gt, depth_gt, pred_label, pred_depth)
@@ -262,6 +266,8 @@ class FCNMirrorSegmentationDepthEstimation(object):
                 label_names=self.class_names, alpha=0.7)
             pred_depth_viz = self._colorize_depth(
                 pred_depth, self.min_value, self.max_value)[:, :, ::-1]
+            inpainted_depth_viz = self._colorize_depth(
+                inpainted_depth, self.min_value, self.max_value)[:, :, ::-1]
 
             # Show depth accuracy graph
             plt.plot(depth_accs[:, 0], depth_accs[:, 1])
@@ -280,7 +286,7 @@ class FCNMirrorSegmentationDepthEstimation(object):
 
             viz = mvtk.image.tile(
                 [image_rgb, pred_label_viz, label_gt_viz, plot_img,
-                 depth_rgb, pred_depth_viz, depth_gt_viz, plot_img],
+                 depth_rgb, pred_depth_viz, depth_gt_viz, inpainted_depth_viz],
                 shape=(2, 4))
             mvtk.image.resize(viz, size=300 * 300)
             print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
