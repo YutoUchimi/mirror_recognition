@@ -1,14 +1,17 @@
 <launch>
 
   <arg name="INPUT_IMAGE"/>
+  <arg name="INPUT_INFO"/>
+  <arg name="INPUT_DEPTH"/>
   <arg name="INPUT_CLOUD"/>
   <arg name="LAUNCH_MANAGER"/>
-  <arg name="manager" default="recognition_manager"/>
-  <arg name="model_dir" default="$(find mirror_recognition)/logs/20181011-115836"/>
+  <arg name="manager" default="mirror_recognition_manager"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/logs/20190115-011612"/>
   <arg name="gpu" default="0"/>
 
-  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_object_segmentation.launch">
+  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation_depth_estimation.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)"/>
     <arg name="model_dir" value="$(arg model_dir)"/>
     <arg name="gpu" value="$(arg gpu)"/>
   </include>
@@ -17,47 +20,64 @@
     <node name="$(arg manager)"
           pkg="nodelet" type="nodelet"
           args="manager"
-          output="screen"
-          respawn="true"/>
+          output="screen" respawn="true"/>
   </group>
 
-  <!-- <node name="points_xyzrgb_mirror" -->
-  <!--       pkg="nodelet" type="nodelet" -->
-  <!--       args="load depth_image_proc/point_cloud_xyzrgb $(arg manager)" -->
-  <!--       respawn="true"> -->
-  <!--   <remap from="rgb/image_rect_color" to="$(arg camera)/rgb/image_rect_color"/> -->
-  <!--   <remap from="rgb/camera_info" to="$(arg camera)/rgb/camera_info"/> -->
-  <!--   <remap from="depth_registered/image_rect" to="fcn_mirror_object_segmentation/output/depth_registered/mirror_image_rect"/> -->
-  <!--   <remap from="depth_registered/points" to="estimated_mirror/depth_registered/points"/> -->
-  <!-- </node> -->
+  <!-- Only labeled as mirror region -->
+  <node name="point_cloud_xyzrgb_mirror"
+        pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/point_cloud_xyzrgb $(arg manager)"
+        respawn="true">
+    <remap from="rgb/image_rect_color" to="$(arg INPUT_IMAGE)"/>
+    <remap from="rgb/camera_info" to="$(arg INPUT_INFO)"/>
+    <remap from="depth_registered/image_rect" to="fcn_mirror_segmentation_depth_estimation/output/depth_pred_labeled"/>
+    <remap from="depth_registered/points" to="fcn_mirror_segmentation_depth_estimation/output/points_labeled"/>
+  </node>
 
+  <!-- Mirror plane -->
   <node name="multi_plane_estimate"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
-        output="screen"
-        respawn="true">
-    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
-    <!-- <remap from="~input" to="estimated_mirror/depth_registered/points"/> -->
+        output="screen" respawn="true">
+    <remap from="~input" to="fcn_mirror_segmentation_depth_estimation/output/points_labeled"/>
     <rosparam subst_value="true">
-      max_curvature: 0.01
-      min_size: 100
       estimate_normal: true
       border_policy_ignore: false
+      min_size: 1000
+      angular_threshold: 0.1
+      distance_threshold: 0.03
+      max_curvature: 0.01
+      connect_plane_angle_threshold: 0.3
+      connect_distance_threshold: 0.05
     </rosparam>
   </node>
 
-  <!-- <node name="point_cloud_mirror_flipper" -->
-  <!--       pkg="nodelet" type="nodelet" -->
-  <!--       args="load mirror_recognition/PointCloudMirrorFlipper $(arg manager)" -->
-  <!--       output="screen" -->
-  <!--       respawn="true"> -->
-  <!--   <remap from="~input" to="$(arg INPUT_CLOUD)"/> -->
-  <!--   <remap from="~input/indices" to="label_to_cluster_indices_mirror/output"/> -->
-  <!--   <remap from="~input/coefficients" to="multi_plane_estimate/output_coefficients"/> -->
-  <!--   <rosparam> -->
-  <!--     approximate_sync: true -->
-  <!--     max_queue_size: 100 -->
-  <!--   </rosparam> -->
-  <!-- </node> -->
+  <!-- Get ClusterPointIndices from mirror label -->
+  <node name="label_to_cluster_indices_mirror"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/LabelToClusterPointIndices $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="fcn_mirror_segmentation_depth_estimation/output/label"/>
+    <rosparam>
+      bg_label: 0
+    </rosparam>
+  </node>
+
+  <!-- Flip point cloud from camera by mirror plane -->
+  <node name="point_cloud_mirror_flipper"
+        pkg="nodelet" type="nodelet"
+        args="load mirror_recognition/PointCloudMirrorFlipper $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap from="~input/mirror_indices" to="label_to_cluster_indices_mirror/output"/>
+    <remap from="~input/plane_indices" to="multi_plane_estimate/output"/>
+    <!-- <remap from="~input/plane_indices" to="multi_plane_estimate/output_refined"/> -->
+    <remap from="~input/plane_coefficients" to="multi_plane_estimate/output_coefficients"/>
+    <!-- <remap from="~input/plane_coefficients" to="multi_plane_estimate/output_refined_coefficients"/> -->
+    <rosparam>
+      approximate_sync: true
+      max_queue_size: 100
+    </rosparam>
+  </node>
 
 </launch>
