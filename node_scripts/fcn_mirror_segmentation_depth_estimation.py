@@ -36,9 +36,11 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
         self.pub_label = self.advertise('~output/label', Image, queue_size=1)
         self.pub_proba = self.advertise('~output/proba', Image, queue_size=1)
         self.pub_depth_inpainted = self.advertise(
-            '~output/depth', Image, queue_size=1)
+            '~output/depth_inpainted', Image, queue_size=1)
         self.pub_depth_pred_raw = self.advertise(
             '~output/depth_pred_raw', queue_size=1)
+        self.pub_depth_pred_labeled = self.advertise(
+            '~output/depth_pred_labeled', Image, queue_size=1)
 
         self.xp = cuda.cupy if self.gpu >= 0 else np
 
@@ -128,8 +130,12 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
             proba = proba.astype(np.float32)
 
             # Inpaint depth image
-            inpainted_depth = depth.copy()
-            inpainted_depth[label > 0] = depth_pred_raw[label > 0]
+            depth_inpainted = depth.copy()
+            depth_inpainted[label > 0] = depth_pred_raw[label > 0]
+
+            # Depth image only labeled as mirror
+            depth_pred_labeled = depth_pred_raw.copy()
+            depth_pred_labeled[label == 0] = np.nan
 
             # Publish
             label_msg = br.cv2_to_imgmsg(label, '32SC1')
@@ -138,12 +144,15 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
             proba_msg = br.cv2_to_imgmsg(proba)
             proba_msg.header = img_msg.header
             self.pub_proba.publish(proba_msg)
-            depth_inpainted_msg = br.cv2_to_imgmsg(inpainted_depth)
+            depth_inpainted_msg = br.cv2_to_imgmsg(depth_inpainted)
             depth_inpainted_msg.header = img_msg.header
             self.pub_depth_inpainted.publish(depth_inpainted_msg)
             depth_pred_raw_msg = br.cv2_to_imgmsg(depth_pred_raw)
             depth_pred_raw_msg.header = img_msg.header
             self.pub_depth_pred_raw.publish(depth_pred_raw_msg)
+            depth_pred_labeled_msg = br.cv2_to_imgmsg(depth_pred_labeled)
+            depth_pred_labeled_msg.header = img_msg.header
+            self.pub_depth_pred_labeled.publish(depth_pred_labeled_msg)
 
         # FIXME: Somehow TypeError occurs while loading model.
         except TypeError:
