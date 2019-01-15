@@ -227,8 +227,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         ]
         upscore8c_depth = h  # 1/1
 
-        h = F.concat((depth, score_label), axis=1)
-        h = F.relu(self.batch_norm1(self.conv1_1_depth(h)))
+        concatenated = F.concat((depth, score_label), axis=1)
+        concatenated.set_creator(None)
+        h = F.relu(self.batch_norm1(self.conv1_1_depth(concatenated)))
         h = F.relu(self.batch_norm2(self.conv1_2_depth(h)))
         h = self.conv1_3_depth(h)
         conv1_depth = h  # 1/1
