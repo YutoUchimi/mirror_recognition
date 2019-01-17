@@ -7,7 +7,7 @@
   <node name="fcn_mirror_segmentation_depth_estimation"
         pkg="mirror_recognition" type="fcn_mirror_segmentation_depth_estimation.py"
         output="screen">
-    <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+    <remap from="~input/image" to="$(arg INPUT_IMAGE)"/>
     <remap from="~input/depth" to="$(arg INPUT_DEPTH)"/>
     <rosparam command="load" file="$(find mirror_recognition)/config/mirror_names.yaml"/>
     <rosparam subst_value="true">
