@@ -55,7 +55,9 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
             rospy.logerr('File set does not match. Expected: {}, Actual: {}'.
                          format(expected_file_set, actual_file_set))
 
+        self.model_ready = False
         self._load_model()
+        self.model_ready = True
 
     def _load_model(self):
         with open(osp.join(self.model_dir, 'model.txt'), 'r') as f:
@@ -99,6 +101,10 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
             sub.unregister()
 
     def _cb(self, img_msg, depth_msg):
+        # Wait until model is loaded.
+        if not self.model_ready:
+            return
+
         br = cv_bridge.CvBridge()
         img_bgr = br.imgmsg_to_cv2(
             img_msg, desired_encoding='bgr8').astype(np.float32)
