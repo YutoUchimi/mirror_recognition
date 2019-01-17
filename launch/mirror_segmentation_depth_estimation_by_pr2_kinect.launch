@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="gpu" default="0"/>
-  <arg name="model_dir" default="$(find mirror_recognition)/logs/20190115-011612"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/logs/20190116-122456"/>
   <arg name="rviz" default="true"/>
 
   <!-- Republish images -->
