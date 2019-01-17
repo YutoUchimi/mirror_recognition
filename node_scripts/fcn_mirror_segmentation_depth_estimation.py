@@ -118,7 +118,7 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
         # depth: (3, H, W)
         depth_bgr = self._colorize_depth(
             depth,
-            min_value=self.model.min_value, max_value=self.model.max_value
+            min_value=self.model.min_depth, max_value=self.model.max_depth
         ).astype(np.float32)
         depth_bgr_chw = (depth_bgr - mean_bgr).transpose((2, 0, 1))
 
