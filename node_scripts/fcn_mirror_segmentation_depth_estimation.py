@@ -38,7 +38,7 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
         self.pub_depth_inpainted = self.advertise(
             '~output/depth_inpainted', Image, queue_size=1)
         self.pub_depth_pred_raw = self.advertise(
-            '~output/depth_pred_raw', queue_size=1)
+            '~output/depth_pred_raw', Image, queue_size=1)
         self.pub_depth_pred_labeled = self.advertise(
             '~output/depth_pred_labeled', Image, queue_size=1)
 
