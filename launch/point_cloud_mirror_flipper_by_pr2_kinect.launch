@@ -8,19 +8,44 @@
         args="manager"
         output="screen" respawn="true"/>
 
-  <include file="$(find astra_launch)/launch/astra.launch">
-    <arg name="camera" value="camera"/>
-    <arg name="load_driver" value="true"/>
-    <arg name="debayer_processing" value="true"/>
-    <arg name="depth_registration" value="false"/>
-  </include>
+  <group ns="kinect_head_remote">
+    <!-- Relay -->
+    <node name="relay_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"
+          output="screen" respawn="true"/>
+    <!-- Republish images -->
+    <node name="republish_rgb"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+      <remap from="out" to="rgb/image_rect_color"/>
+    </node>
+    <node name="republish_depth"
+          pkg="image_transport" type="republish"
+          args="compressedDepth raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
+      <remap from="out" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+    <!-- 3D reconstruction -->
+    <node name="point_cloud_xyzrgb_remote"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyzrgb /$(arg manager)"
+          output="screen" respawn="true">
+      <remap from="rgb/camera_info" to="rgb/camera_info"/>
+      <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
+      <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+  </group>
 
   <!-- Main Process -->
   <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
-    <arg name="INPUT_IMAGE" value="/camera/rgb/image_rect_color"/>
-    <arg name="INPUT_INFO" value="/camera/rgb/camera_info"/>
-    <arg name="INPUT_DEPTH" value="/camera/depth_registered/sw_registered/image_rect"/>
-    <arg name="INPUT_CLOUD" value="/camera/depth_registered/points"/>
+    <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
+    <arg name="INPUT_INFO" value="/kinect_head_remote/rgb/camera_info"/>
+    <arg name="INPUT_DEPTH" value="/kinect_head_remote/depth_registered/hw_registered/image_rect"/>
+    <arg name="INPUT_CLOUD" value="/kinect_head_remote/depth_registered/points"/>
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
     <arg name="model_dir" value="$(find mirror_recognition)/logs/20190116-122456"/>
@@ -31,10 +56,10 @@
   <group if="$(arg rviz)">
     <node name="rviz"
           pkg="rviz" type="rviz"
-          args="-d $(find mirror_recognition)/rvizconfig/point_cloud_flipper_by_astra.rviz"/>
+          args="-d $(find mirror_recognition)/rvizconfig/point_cloud_flipper_by_pr2_kinect.rviz"/>
 
     <!-- Visualize input depth image -->
-    <group ns="camera/depth_registered/sw_registered">
+    <group ns="kinect_head_remote/depth_registered/hw_registered">
       <node name="image_rect_viz"
             pkg="image_view" type="image_view"
             output="screen"
