@@ -8,7 +8,7 @@
 
 #include <jsk_recognition_msgs/ClusterPointIndices.h>
 #include <jsk_recognition_msgs/ModelCoefficientsArray.h>
-#include <jsk_topic_tools/connection_based_nodelet.h>
+#include <jsk_topic_tools/diagnostic_nodelet.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -19,7 +19,7 @@
 
 namespace mirror_recognition
 {
-class PointCloudMirrorFlipper: public jsk_topic_tools::ConnectionBasedNodelet
+class PointCloudMirrorFlipper: public jsk_topic_tools::DiagnosticNodelet
 {
 public:
   typedef message_filters::sync_policies::ExactTime<
@@ -32,6 +32,7 @@ public:
     jsk_recognition_msgs::ClusterPointIndices,
     jsk_recognition_msgs::ClusterPointIndices,
     jsk_recognition_msgs::ModelCoefficientsArray> ASyncPolicy;
+  PointCloudMirrorFlipper(): DiagnosticNodelet("PointCloudMirrorFliper") {}
 
 protected:
   ////////////////////////////////////////////////

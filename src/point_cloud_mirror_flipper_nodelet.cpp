@@ -19,7 +19,7 @@ namespace mirror_recognition
 {
   void PointCloudMirrorFlipper::onInit()
   {
-    ConnectionBasedNodelet::onInit();
+    DiagnosticNodelet::onInit();
     pnh_->param("approximate_sync", approximate_sync_, false);
     pnh_->param("max_queue_size", max_queue_size_, 100);
     pub_ = advertise<sensor_msgs::PointCloud2>(*pnh_, "output", 1);
