@@ -116,10 +116,10 @@ namespace mirror_recognition
 
       // Each plane is expressed as [ax + by + cz + d = 0]
       float a, b, c, d;
-      a = coefficients->coefficients[i].values[0];
-      b = coefficients->coefficients[i].values[1];
-      c = coefficients->coefficients[i].values[2];
-      d = coefficients->coefficients[i].values[3];
+      a = plane_coefficients->coefficients[i].values[0];
+      b = plane_coefficients->coefficients[i].values[1];
+      c = plane_coefficients->coefficients[i].values[2];
+      d = plane_coefficients->coefficients[i].values[3];
 
       // Compute transform matrix
       Eigen::Matrix4f R;
