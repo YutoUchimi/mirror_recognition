@@ -32,6 +32,9 @@
     <remap from="rgb/camera_info" to="$(arg INPUT_INFO)"/>
     <remap from="depth_registered/image_rect" to="fcn_mirror_segmentation_depth_estimation/output/depth_pred_labeled"/>
     <remap from="depth_registered/points" to="fcn_mirror_segmentation_depth_estimation/output/points_labeled"/>
+    <rosparam>
+      queue_size: 20
+    </rosparam>
   </node>
 
   <!-- Mirror plane -->
@@ -76,7 +79,7 @@
     <!-- <remap from="~input/plane_coefficients" to="multi_plane_estimate/output_refined_coefficients"/> -->
     <rosparam>
       approximate_sync: true
-      max_queue_size: 100
+      max_queue_size: 1000
     </rosparam>
   </node>
 
