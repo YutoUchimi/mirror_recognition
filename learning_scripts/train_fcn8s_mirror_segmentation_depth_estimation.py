@@ -165,6 +165,9 @@ def main():
     with open(osp.join(out, 'n_class.txt'), 'w') as f:
         f.write(str(n_class))
 
+    with open(osp.join(out, 'batch_size.txt'), 'w') as f:
+        f.write(str(args.batch_size))
+
     trainer.extend(
         extensions.snapshot_object(
             model,
