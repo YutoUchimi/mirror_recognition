@@ -81,6 +81,8 @@ def main():
         '-d', '--dataset', type=str, required=True, help='Dataset class name')
     parser.add_argument(
         '-m', '--model', type=str, required=True, help='Model class name')
+    parser.add_argument(
+        '-b', '--batch_size', type=int, required=True, help='Batch size')
     args = parser.parse_args()
 
     gpu = args.gpu
@@ -111,7 +113,8 @@ def main():
     dataset_valid_transformed = TransformDataset(dataset_valid, transform)
 
     iter_train = chainer.iterators.MultiprocessIterator(
-        dataset_train_transformed, batch_size=1, shared_mem=10 ** 8)
+        dataset_train_transformed, batch_size=args.batch_size,
+        shared_mem=10 ** 8)
     iter_valid = chainer.iterators.MultiprocessIterator(
         dataset_valid_transformed, batch_size=1, shared_mem=10 ** 8,
         repeat=False, shuffle=False)

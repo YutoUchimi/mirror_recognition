@@ -295,9 +295,6 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         if self.xp.isnan(float(loss.data)):
             raise ValueError('Loss is nan.')
 
-        batch_size = len(score_label)
-        assert batch_size == 1
-
         # GPU -> CPU
         # N, C, H, W -> C, H, W
         label_gt = cuda.to_cpu(label_gt)[0]
