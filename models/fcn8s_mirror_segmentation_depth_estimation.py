@@ -12,9 +12,9 @@ import numpy as np
 
 class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
-    # 0.5 < depth < 5.0
-    min_depth = 0.5
-    max_depth = 5.0
+    # 0.4 < depth < 5.1
+    min_depth = 0.4
+    max_depth = 5.1
 
     pretrained_model = osp.expanduser(
         '~/data/models/chainer/fcn8s-atonce_from_caffe.npz')
