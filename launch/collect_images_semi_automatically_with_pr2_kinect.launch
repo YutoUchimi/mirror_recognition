@@ -1,0 +1,126 @@
+<launch>
+
+  <arg name="save_dir"
+       value="~/data/mvtk/mirror_recognition/raw_data/20190118/before_split"/>
+  <arg name="min_image_value" default="0.5"/>
+  <arg name="max_image_value" default="5.0"/>
+
+
+  <!-- Get mirror bbox -->
+  <node name="transformable_interactive_server"
+        pkg="jsk_interactive_marker" type="transformable_server_sample">
+    <rosparam subst_value="true">
+      display_interactive_manipulator: true
+      display_interactive_manipulator_only_selected: true
+      display_description_only_selected: true
+    </rosparam>
+  </node>
+  <node name="transformable_table_markers"
+        pkg="jsk_interactive_marker" type="transformable_markers_client.py">
+    <remap from="~server" to="transformable_interactive_server" />
+    <rosparam subst_value="true">
+      config_file: $(find mirror_recognition)/config/mirror_marker.yaml
+      config_auto_save: true
+    </rosparam>
+  </node>
+  <node name="bbox_array_to_bbox"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg manager)"
+        respawn="true" output="screen">
+    <remap from="~input" to="/transformable_table_markers/output/boxes"/>
+    <rosparam>
+      index: 0
+    </rosparam>
+  </node>
+
+
+  <!-- Data collection -->
+  <node name="data_collection_server"
+        pkg="jsk_data" type="data_collection_server.py"
+        clear_params="true" output="screen">
+    <rosparam subst_value="true">
+      save_dir: $(arg save_dir)
+      topics:
+        - name: /kinect_head/rgb/camera_info
+          msg_class: sensor_msgs/CameraInfo
+          fname: camera_info.yaml
+          savetype: YAML
+        - name: /kinect_head/rgb/image_rect_color
+          msg_class: sensor_msgs/Image
+          fname: image.jpg
+          savetype: ColorImage
+        - name: /kinect_head/depth_registered/hw_registered/image_rect
+          msg_class: sensor_msgs/Image
+          fname: depth.npz
+          savetype: DepthImage
+        - name: /tf_to_transform_map_to_camera
+          msg_class: geometry_msgs/TransformStamped
+          fname: tf_map_to_camera.yaml
+          savetype: YAML
+        - name: /tf_to_transform_base_to_camera
+          msg_class: geometry_msgs/TransformStamped
+          fname: tf_base_to_camera.yaml
+          savetype: YAML
+      params:
+        - key: /data_collection/view_frame
+          fname: view_frame.txt
+          savetype: Text
+      approximate_sync: true
+      slop: 1.0
+    </rosparam>
+  </node>
+  <node name="tf_to_transform_map_to_camera"
+        pkg="jsk_topic_tools" type="tf_to_transform.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      parent_frame_id: map
+      child_frame_id: head_mount_kinect_rgb_optical_frame
+      duration: 1
+      rate: 30
+    </rosparam>
+  </node>
+  <node name="tf_to_transform_base_to_camera"
+        pkg="jsk_topic_tools" type="tf_to_transform.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      parent_frame_id: base_link
+      child_frame_id: head_mount_kinect_rgb_optical_frame
+      duration: 1
+      rate: 30
+    </rosparam>
+  </node>
+  <node name="collect_images_semi_automatically_by_pr2"
+        pkg="mirror_recognition" type="collect-images-semi-automatically-by-pr2.l"
+        output="screen"/>
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn"/>
+
+
+  <!-- Visualization -->
+  <group ns="kinect_head/depth_registered/hw_registered">
+    <node name="image_rect_viz"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="image_rect"/>
+      <rosparam subst_value="true">
+        gui: false
+        min_image_value: $(arg min_image_value)
+        max_image_value: $(arg max_image_value)
+        colormap: 2
+      </rosparam>
+    </node>
+  </group>
+  <node name="rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find mirror_recognition)/rvizconfig/pr2_kinect.rviz"/>
+  <node name="rosconsole_overlay_text"
+        pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      reverse_lines: false
+    </rosparam>
+  </node>
+
+</launch>
