@@ -72,6 +72,9 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         if depth.dtype == np.uint16:
             depth = depth.astype(np.float32)
             depth /= 1000
+        depth_keep = ~np.isnan(depth)
+        depth[depth_keep] = np.maximum(depth[depth_keep], self.min_value)
+        depth[depth_keep] = np.minimum(depth[depth_keep], self.max_value)
         assert depth.dtype == np.float32
         assert depth.ndim == 2
 
@@ -87,6 +90,11 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         if depth_gt.dtype == np.uint16:
             depth_gt = depth_gt.astype(np.float32)
             depth /= 1000
+        depth_gt_keep = ~np.isnan(depth_gt)
+        depth[depth_gt_keep] = np.maximum(
+            depth_gt[depth_gt_keep], self.min_value)
+        depth[depth_gt_keep] = np.minimum(
+            depth_gt[depth_gt_keep], self.max_value)
         assert depth_gt.dtype == np.float32
         assert depth_gt.ndim == 2
 
@@ -171,9 +179,9 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
 
         print('[%04d] %s' % (index, '>' * 75))
         print('image_shape: %s' % repr(image.shape))
-        print('depth min:  %f' % np.min(depth))
-        print('depth mean: %f' % np.mean(depth))
-        print('depth max:  %f' % np.max(depth))
+        print('depth min:  %f' % np.nanmin(depth))
+        print('depth mean: %f' % np.nanmean(depth))
+        print('depth max:  %f' % np.nanmax(depth))
         print('[%04d] %s' % (index, '<' * 75))
         depth_viz = mvtk.image.colorize_depth(
             depth, min_value=self.min_value, max_value=self.max_value)
