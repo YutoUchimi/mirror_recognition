@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="save_dir"
-       value="~/data/mvtk/mirror_recognition/raw_data/20190118/before_split"/>
+       value="~/data/mvtk/mirror_recognition/raw_data/20190121/before_split"/>
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
 
@@ -15,7 +15,7 @@
       display_description_only_selected: true
     </rosparam>
   </node>
-  <node name="transformable_table_markers"
+  <node name="transformable_mirror_markers"
         pkg="jsk_interactive_marker" type="transformable_markers_client.py">
     <remap from="~server" to="transformable_interactive_server" />
     <rosparam subst_value="true">
@@ -27,7 +27,7 @@
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg manager)"
         respawn="true" output="screen">
-    <remap from="~input" to="/transformable_table_markers/output/boxes"/>
+    <remap from="~input" to="transformable_mirror_markers/output/boxes"/>
     <rosparam>
       index: 0
     </rosparam>
@@ -91,11 +91,19 @@
       rate: 30
     </rosparam>
   </node>
-  <node name="collect_images_semi_automatically_by_pr2"
-        pkg="mirror_recognition" type="collect-images-semi-automatically-by-pr2.l"
-        output="screen"/>
   <node name="rqt_yn_btn"
         pkg="jsk_rqt_plugins" type="rqt_yn_btn"/>
+  <node name="collect_images_semi_automatically_by_pr2"
+        pkg="mirror_recognition" type="collect-images-semi-automatically-by-pr2.l"
+        output="screen">
+    <remap from="~bbox" to="bbox_array_to_bbox/output"/>
+    <remap from="~yes_no_button" to="rqt_yn_btn"/>
+    <remap from="~save_request" to="data_collection_server/save_request"/>
+    <remap from="~base_offset_x" to="/base_offset_x"/>
+    <remap from="~base_offset_y" to="/base_offset_y"/>
+    <remap from="~head_offset_y" to="/head_offset_y"/>
+    <remap from="~head_offset_z" to="/head_offset_z"/>
+  </node>
 
 
   <!-- Visualization -->
