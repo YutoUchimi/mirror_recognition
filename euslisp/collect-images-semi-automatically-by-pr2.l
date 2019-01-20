@@ -1,76 +1,174 @@
 #!/usr/bin/env roseus
+;; -*- coding: utf-8 -*-
 
+(ros::load-ros-manifest "jsk_gui_msgs")
+(ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "std_srvs")
+
+(require "models/room73b2-scene.l")
 (require "package://pr2eus/pr2-interface.l")
 
 
-(defun move-head-multi-view (view-frame-y view-frame-z mirror-centroid)
+#|
+Subscribing topics
+  - ``~bbox`` (jsk_recognition_msgs/BoundingBox)
+
+Calling services
+  - ``~yes_no_button`` (jsk_gui_msgs/YesNo)
+  - ``~save_request`` (std_srvs/Trigger)
+
+Setting parameters
+  - ``~base_offset_x`` (int)
+  - ``~base_offset_y`` (int)
+  - ``~head_offset_y`` (int)
+  - ``~head_offset_z`` (int)
+|#
+
+
+(defun init ()
   (let ()
-    (setq offset-y (+ -1000 (* 250 view-frame-y)))
-    (setq offset-z (+ -1000 (* 250 view-frame-z)))
-    (setq target-pos (float-vector (aref mirror-centroid 0)
+    (ros::roseus "collect_images_semi_automatically_by_pr2")
+
+    (ros::ros-info "Initializing...")
+    (unless (boundp '*ri*)
+      (pr2-init t))
+    (unless (boundp '*room*)
+      (setq *room* (room73b2)))
+    (send *room* :move-to
+          (make-coords :pos (float-vector 0 6675 0)
+                       :rpy (float-vector 0 0 0)) :world)
+    (objects (list *pr2* *room*))
+
+    (pr2-tuckarm-pose)
+    (update-*pr2*)
+    (redraw)
+    ))
+
+
+(defun redraw ()
+  (send *irtviewer* :redraw)
+  (send *irtviewer* :look-all
+        (geo::make-bounding-box
+         (flatten (send-all (send *pr2* :bodies) :vertices))))
+  )
+
+
+(defun update-*pr2* ()
+  (ros::spin-once)
+  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  )
+
+
+(defun wait-for-user-input ()
+  (let ((service-name "~yes_no_button")
+        (req (instance jsk_gui_msgs::YesNoRequest :init))
+        (res nil)
+        (pressed-p nil))
+    (ros::wait-for-service service-name)
+    (ros::ros-info "Please select Yes to start program.")
+    ;; Wait until Yes is pressed
+    (while (not pressed-p)
+      (setq res (ros::service-call service-name req))
+      (when (send res :yes)
+        (ros::ros-info "Requesting to start program.")
+        (setq pressed-p t)))
+    ))
+
+
+(defun move-base-multi-view (ref-coords base-offset-x base-offset-y)
+  (let* ((target-coords
+          (send ref-coords :locate (float-vector offset-x offset-y 0))))
+    (speak-jp "動きます。注意してください。")
+    (unix:sleep 1)
+    (send *ri* :move-to target-coords)
+    (update-*pr2*)
+    (redraw)
+    ))
+
+
+(defun move-head-multi-view (mirror-centroid offset-y offset-z)
+  (let* ((target-pos (float-vector (aref mirror-centroid 0)
                                    (+ (aref mirror-centroid 1) offset-y)
-                                   (+ (aref mirror-centroid 2) offset-z)))
+                                   (+ (aref mirror-centroid 2) offset-z))))
     (send *pr2* :head :look-at target-pos)
+    (redraw)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    (update-*pr2*)
+    (redraw)
+    ))
+
+
+(defun recognize-bbox ()
+  (let (bbox-msg centroid)
+    (ros::ros-info "Recognizing bbox...")
+
+    (while (null bbox-msg)
+      ;; Subscribe bbox topic
+      (ros::ros-info "Wait for subscribing bbox topic...")
+      (setq bbox-msg
+            (one-shot-subscribe "~bbox" jsk_recognition_msgs::BoundingBox))
+      )
+
+    ;; Get position of bbox (frame: /base_link)
+    ;; Convert metric: m -> mm
+    (setq centroid
+          (float-vector
+           (* 1000 (send (send (send bbox-msg :pose) :position) :x))
+           (* 1000 (send (send (send bbox-msg :pose) :position) :y))
+           (* 1000 (send (send (send bbox-msg :pose) :position) :z))))
+
+    (speak-jp "注目すべき場所を教えてもらいました。")
+    (ros::ros-info "Bounding box found at frame /base_link : ~a" centroid)
+    (return-from recognize-bbox centroid)
     ))
 
 
 (defun main ()
-  (setq *arm* :rarm)
+  (let (cur-coords
+        mirror-centroid
+        (req (instance std_srvs::TriggerRequest :init))
+        (res nil))
+    (init)
+    (while (ros::ok)
+      (speak-jp "画像データを集めます。")
+      (speak-jp "周りに障害物がなければ、Yesボタンを押して開始してください。")
+      (wait-for-user-input)
+      (setq cur-coords (send *ri* :state :worldcoords))
+      (setq mirror-centroid (recognize-bbox))
 
-  (jsk_arc2017_baxter::arc-init :ctype :rarm-head-controller :moveit nil)
-  ;; (send *ti* :wipe-all-scene)
+      (dolist (base-offset-x (list -1000 -500 0 500 1000))
+        (dolist (base-offset-y (list -1000 -500 0 500 1000))
+          (ros::set-param "~base_offset_x" base-offset-x)
+          (ros::set-param "~base_offset_y" base-offset-y)
 
-  ;; rotate head to opposite side of moving arm
-  (send *baxter* :head_pan :joint-angle 70)
-  (send *ri* :angle-vector-raw (send *baxter* :angle-vector) 3000 :head-controller 0)
-  (send *ri* :wait-interpolation)
+          ;; Move base
+          (move-base-multi-view cur-coords base-offset-x base-offset-y)
 
-  (send *ti* :recognize-bin-boxes)
-  (objects (append (list *baxter*) (send *ti* :visualize-bins)))
+          (dolist (head-offset-y (list -1000 -750 -500 -250 0 250 500 750 1000))
+            (dolist (head-offset-z (list -1000 -750 -500 -250 0 250 500 750 1000))
+              (ros::set-param "~head_offset_y" head-offset-y)
+              (ros::set-param "~head_offset_z" head-offset-z)
 
-  ;; (send *ti* :add-cardboard-scene)
-  ;; (send *ti* :add-bin-scene :b)
-  ;; (send *ti* :add-bin-scene :c)
+              ;; Move head
+              (move-head-multi-view mirror-centroid head-offset-y head-offset-z)
+              (unix:sleep 1)
 
-  (send *baxter* :fold-pose-back *arm*)
-  (send *baxter* :head_pan :joint-angle 80)
-  (send *ti* :send-av)
-
-  ;; (send *ti* :delete-bin-scene :b)
-  ;; (send *ti* :delete-bin-scene :c)
-
-  (while (send *ti* :wait-for-user-input-to-start *arm*)
-    (dolist (bin (list :b :c))
-      (dolist (view-frame (list :1 :2 :3 :4 :5 :6 :7 :8 :9))
-        ;; (ros::set-param "/right_hand/target_bin_name" (symbol2str bin))
-        (cond ((eq bin :b) (ros::set-param "/right_hand/target_bin_name" "tort_back"))
-              ((eq bin :c) (ros::set-param "/right_hand/target_bin_name" "tort_front")))
-        (ros::set-param "/right_hand/view_frame" (symbol2str view-frame))
-        ;; (send *ti* :add-bin-scene :b)
-        ;; (send *ti* :add-bin-scene :c)
-        ;; (send *ti* :move-arm-body->bin-overlook-pose *arm* bin)
-        (move-arm-body->bin-overlook-pose->multi-view *arm* bin view-frame)
-        ;; (send *baxter* *arm* :move-end-pos #f(0 0 100) :world)
-        (send *ti* :send-av)
-        (send *irtviewer* :redraw)
-        (send *ri* :wait-interpolation)
-        ;; (send *ti* :delete-bin-scene :b)
-        ;; (send *ti* :delete-bin-scene :c)
-
-        (unix::sleep 3)
-        (setq res
-              (ros::service-call "/right_hand/data_collection_server/save_request"
-                                 (instance std_srvs::TriggerRequest :init)))
-        (ros::ros-info-green "bin: ~A, view_frame: ~A, success: ~A, message: ~A" bin view-frame (send res :success) (send res :message))
-
-        (send *baxter* :fold-pose-back *arm*)
-        (send *ti* :send-av)
+              ;; Save request
+              (setq res (ros::service-call "~save_request" req))
+              (if (send res :success)
+                  (speak-jp "パシャ")
+                (speak-jp "撮影に失敗しました。"))
+              (ros::ros-info "success: ~A, message: ~A"
+                             (send res :success) (send res :message))
+              (unix:sleep 1)
+              )
+            )
+          )
         )
       )
-    )
-  )
+    ))
 
 
 (main)
