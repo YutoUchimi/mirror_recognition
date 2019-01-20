@@ -91,9 +91,9 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
             depth_gt = depth_gt.astype(np.float32)
             depth /= 1000
         depth_gt_keep = ~np.isnan(depth_gt)
-        depth[depth_gt_keep] = np.maximum(
+        depth_gt[depth_gt_keep] = np.maximum(
             depth_gt[depth_gt_keep], self.min_value)
-        depth[depth_gt_keep] = np.minimum(
+        depth_gt[depth_gt_keep] = np.minimum(
             depth_gt[depth_gt_keep], self.max_value)
         assert depth_gt.dtype == np.float32
         assert depth_gt.ndim == 2
