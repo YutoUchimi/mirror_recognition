@@ -171,6 +171,9 @@ class Mirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
 
         print('[%04d] %s' % (index, '>' * 75))
         print('image_shape: %s' % repr(image.shape))
+        print('depth min:  %f' % np.min(depth))
+        print('depth mean: %f' % np.mean(depth))
+        print('depth max:  %f' % np.max(depth))
         print('[%04d] %s' % (index, '<' * 75))
         depth_viz = mvtk.image.colorize_depth(
             depth, min_value=self.min_value, max_value=self.max_value)
