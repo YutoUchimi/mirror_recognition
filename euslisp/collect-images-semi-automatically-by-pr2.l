@@ -42,7 +42,8 @@ Setting parameters
       (send *room* :move-to
             (make-coords :pos (float-vector 0 6675 0)
                          :rpy (float-vector 0 0 0)) :world)
-      (objects (list *pr2* *room*)))
+      (objects (list *pr2* *room*))
+      )
 
     (pr2-tuckarm-pose)
     (update-*pr2*)
@@ -177,12 +178,13 @@ Setting parameters
               (ros::ros-info "Waiting for service: ~A" save-service-name)
               (ros::wait-for-service save-service-name)
               (ros::ros-info "Requesting to save images...")
-              ;; (setq res (ros::service-call save-service-name req))
-              ;; (if (send res :success)
-              ;;     (speak-jp "パシャ")
-              ;;   (speak-jp "撮影に失敗しました。"))
-              ;; (ros::ros-info "success: ~A, message: ~A"
-              ;;                (send res :success) (send res :message))
+              (setq res (ros::service-call save-service-name req))
+              (when *speak*
+                (if (send res :success)
+                    (speak-jp "パシャ")
+                  (speak-jp "撮影に失敗しました。")))
+              (ros::ros-info "success: ~A, message: ~A"
+                             (send res :success) (send res :message))
               (unix:sleep 1)
               )
             )
