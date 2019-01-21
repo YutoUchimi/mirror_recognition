@@ -83,9 +83,12 @@ Setting parameters
 
 
 (defun move-base-multi-view (ref-coords offset-x offset-y)
-  (let* ((target-coords
-          (send ref-coords :locate (float-vector offset-x offset-y 0))))
+  (let* ((target-coords (send ref-coords :copy-worldcoords)))
+    (setq target-coords
+          (send target-coords :locate (float-vector offset-x offset-y 0)))
     (ros::ros-info "Moving base...")
+    (ros::ros-info "Current coords: ~A" (send *ri* :state :worldcoords))
+    (ros::ros-info "Target coords : ~A" (send target-coords :worldcoords))
     (speak-jp "動きます。注意してください。")
     (unix:sleep 1)
     (send *ri* :move-to target-coords)
@@ -144,7 +147,7 @@ Setting parameters
       (speak-jp "画像データを集めます。")
       (speak-jp "周りに障害物がないことを確認したら、Yesボタンを押して開始してください。")
       (wait-for-user-input)
-      (setq cur-coords (send *ri* :state :worldcoords))
+      (setq cur-coords (send *ri* :state :worldcoords :copy-worldcoords))
       (setq mirror-centroid (recognize-bbox))
 
       (dolist (base-offset-x (list -1000 -500 0 500 1000))
@@ -155,8 +158,8 @@ Setting parameters
           ;; Move base
           (move-base-multi-view cur-coords base-offset-x base-offset-y)
 
-          (dolist (head-offset-y (list -1000 -750 -500 -250 0 250 500 750 1000))
-            (dolist (head-offset-z (list -1000 -750 -500 -250 0 250 500 750 1000))
+          (dolist (head-offset-y (list -500 0 500))
+            (dolist (head-offset-z (list -500 0 500))
               (ros::set-param "~head_offset_y" head-offset-y)
               (ros::set-param "~head_offset_z" head-offset-z)
 
@@ -168,12 +171,12 @@ Setting parameters
               (ros::ros-info "Waiting for service: ~A" save-service-name)
               (ros::wait-for-service save-service-name)
               (ros::ros-info "Requesting to save images...")
-              (setq res (ros::service-call save-service-name req))
-              (if (send res :success)
-                  (speak-jp "パシャ")
-                (speak-jp "撮影に失敗しました。"))
-              (ros::ros-info "success: ~A, message: ~A"
-                             (send res :success) (send res :message))
+              ;; (setq res (ros::service-call save-service-name req))
+              ;; (if (send res :success)
+              ;;     (speak-jp "パシャ")
+              ;;   (speak-jp "撮影に失敗しました。"))
+              ;; (ros::ros-info "success: ~A, message: ~A"
+              ;;                (send res :success) (send res :message))
               (unix:sleep 1)
               )
             )
