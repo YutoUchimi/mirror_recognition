@@ -1,11 +1,16 @@
 <launch>
 
-  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/raw_data/20181218/test" />
+  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/raw_data/20190121/before_split" />
   <arg name="CAMERA_FRAME" value="head_mount_kinect_rgb_optical_frame"/>
-  <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26"/>
-  <arg name="OBJECT_NAME" value="mirror"/>
   <arg name="OBJECT_FRAME" value="mirror"/>
   <arg name="gui" default="true" />
+
+  <!-- Change these if you want to use different mesh model -->
+  <!-- <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26"/> -->
+  <!-- <arg name="OBJECT_NAME" value="mirror"/> -->
+  <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26"/>
+  <arg name="OBJECT_NAME" value="mirror"/>
+
 
   <!-- Publish raw dataset -->
   <include file="$(find mirror_recognition)/launch/include/publish_raw_dataset.launch">
