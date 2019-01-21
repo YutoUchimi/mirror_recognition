@@ -133,7 +133,7 @@ Setting parameters
     (init)
     (while (ros::ok)
       (speak-jp "画像データを集めます。")
-      (speak-jp "周りに障害物がなければ、Yesボタンを押して開始してください。")
+      (speak-jp "周りに障害物がないことを確認したら、Yesボタンを押して開始してください。")
       (wait-for-user-input)
       (setq cur-coords (send *ri* :state :worldcoords))
       (setq mirror-centroid (recognize-bbox))
