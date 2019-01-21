@@ -167,6 +167,7 @@ Setting parameters
               ;; Save request
               (ros::ros-info "Waiting for service: ~A" save-service-name)
               (ros::wait-for-service save-service-name)
+              (ros::ros-info "Requesting to save images...")
               (setq res (ros::service-call save-service-name req))
               (if (send res :success)
                   (speak-jp "パシャ")
