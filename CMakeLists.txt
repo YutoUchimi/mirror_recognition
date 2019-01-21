@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   nodelet
   roscpp
+  roseus
   sensor_msgs
 )
 
