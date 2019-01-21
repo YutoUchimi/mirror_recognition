@@ -85,6 +85,7 @@ Setting parameters
 (defun move-base-multi-view (ref-coords offset-x offset-y)
   (let* ((target-coords
           (send ref-coords :locate (float-vector offset-x offset-y 0))))
+    (ros::ros-info "Moving base...")
     (speak-jp "動きます。注意してください。")
     (unix:sleep 1)
     (send *ri* :move-to target-coords)
@@ -97,6 +98,7 @@ Setting parameters
   (let* ((target-pos (float-vector (aref mirror-centroid 0)
                                    (+ (aref mirror-centroid 1) offset-y)
                                    (+ (aref mirror-centroid 2) offset-z))))
+    (ros::ros-info "Moving head...")
     (send *pr2* :head :look-at target-pos)
     (redraw)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -134,6 +136,7 @@ Setting parameters
 (defun main ()
   (let (cur-coords
         mirror-centroid
+        (save-service-name "~save_request")
         (req (instance std_srvs::TriggerRequest :init))
         (res nil))
     (init)
@@ -162,7 +165,9 @@ Setting parameters
               (unix:sleep 1)
 
               ;; Save request
-              (setq res (ros::service-call "~save_request" req))
+              (ros::ros-info "Waiting for service: ~A" save-service-name)
+              (ros::wait-for-service save-service-name)
+              (setq res (ros::service-call save-service-name req))
               (if (send res :success)
                   (speak-jp "パシャ")
                 (speak-jp "撮影に失敗しました。"))
