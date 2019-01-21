@@ -1,6 +1,6 @@
 boxes:
 - dimensions: [0.3, 0.3, 0.3]
-  frame_id: base_link
+  frame_id: map
   name: mirror
   orientation: [0.0, 0.0, 0.0, 1.0]
-  position: [1.8971441984176636, 1.060220718383789, 0.340262234210968]
+  position: [4.0, 7.0, 0.340262234210968]
