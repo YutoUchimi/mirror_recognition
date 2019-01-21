@@ -5,6 +5,7 @@
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
   <arg name="manager" default="collect_images_manager"/>
+  <arg name="show_irtviewer" default="false"/>
 
   <node name="$(arg manager)"
         pkg="nodelet" type="nodelet"
@@ -108,6 +109,9 @@
     <remap from="~base_offset_y" to="/base_offset_y"/>
     <remap from="~head_offset_y" to="/head_offset_y"/>
     <remap from="~head_offset_z" to="/head_offset_z"/>
+    <rosparam subst_value="true">
+      show_irtviewer: $(arg show_irtviewer)
+    </rosparam>
   </node>
 
 

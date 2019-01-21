@@ -25,19 +25,24 @@ Setting parameters
 |#
 
 
+(defvar *show-irtviewer*)
+
+
 (defun init ()
   (let ()
     (ros::roseus "collect_images_semi_automatically_by_pr2")
 
     (ros::ros-info "Initializing...")
+    (setq *show-irtviewer* (ros::get-param "~show_irtviewer"))
     (unless (boundp '*ri*)
-      (pr2-init t))
+      (pr2-init nil))
     (unless (boundp '*room*)
       (setq *room* (room73b2)))
     (send *room* :move-to
           (make-coords :pos (float-vector 0 6675 0)
                        :rpy (float-vector 0 0 0)) :world)
-    (objects (list *pr2* *room*))
+    (when *show-irtviewer*
+      (objects (list *pr2* *room*)))
 
     (pr2-tuckarm-pose)
     (update-*pr2*)
@@ -46,10 +51,11 @@ Setting parameters
 
 
 (defun redraw ()
-  (send *irtviewer* :redraw)
-  (send *irtviewer* :look-all
-        (geo::make-bounding-box
-         (flatten (send-all (send *pr2* :bodies) :vertices))))
+  (when *show-irtviewer*
+    (send *irtviewer* :redraw)
+    (send *irtviewer* :look-all
+          (geo::make-bounding-box
+           (flatten (send-all (send *pr2* :bodies) :vertices)))))
   )
 
 
@@ -76,7 +82,7 @@ Setting parameters
     ))
 
 
-(defun move-base-multi-view (ref-coords base-offset-x base-offset-y)
+(defun move-base-multi-view (ref-coords offset-x offset-y)
   (let* ((target-coords
           (send ref-coords :locate (float-vector offset-x offset-y 0))))
     (speak-jp "動きます。注意してください。")
