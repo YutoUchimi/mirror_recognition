@@ -17,6 +17,10 @@ Calling services
   - ``~yes_no_button`` (jsk_gui_msgs/YesNo)
   - ``~save_request`` (std_srvs/Trigger)
 
+Getting parameters
+  - ``~show_irtviewer`` (bool)
+  - ``~speak`` (bool)
+
 Setting parameters
   - ``~base_offset_x`` (int)
   - ``~base_offset_y`` (int)
@@ -26,6 +30,7 @@ Setting parameters
 
 
 (defvar *show-irtviewer*)
+(defvar *speak*)
 
 
 (defun init ()
@@ -34,6 +39,7 @@ Setting parameters
 
     (ros::ros-info "Initializing...")
     (setq *show-irtviewer* (ros::get-param "~show_irtviewer"))
+    (setq *speak* (ros::get-param "~speak"))
     (unless (boundp '*ri*)
       (pr2-init nil))
     (when *show-irtviewer*
@@ -90,7 +96,8 @@ Setting parameters
     (ros::ros-info "Moving base...")
     (ros::ros-info "Current coords: ~A" (send *ri* :state :worldcoords))
     (ros::ros-info "Target coords : ~A" (send target-coords :worldcoords))
-    (speak-jp "動きます。注意してください。")
+    (when *speak*
+      (speak-jp "動きます。注意してください。"))
     (unix:sleep 1)
     (send *ri* :move-to target-coords)
     (update-*pr2*)
@@ -135,9 +142,11 @@ Setting parameters
           (float-vector
            (* 1000 (send (send (send bbox-msg :pose) :position) :x))
            (* 1000 (send (send (send bbox-msg :pose) :position) :y))
-           (* 1000 (send (send (send bbox-msg :pose) :position) :z))))
+           ;; For euslisp. /eng2/7f is 30000 [mm] height in euslisp.
+           (+ 30000 (* 1000 (send (send (send bbox-msg :pose) :position) :z)))))
 
-    (speak-jp "注目すべき場所を教えてもらいました。")
+    (when *speak*
+      (speak-jp "注目すべき場所を教えてもらいました。"))
     (ros::ros-info "Bounding box found at frame /map : ~a" centroid)
     (return-from recognize-bbox centroid)
     ))
@@ -151,14 +160,17 @@ Setting parameters
         (res nil))
     (init)
     (while (ros::ok)
-      (speak-jp "画像データを集めます。")
-      (speak-jp "周りに障害物がないことを確認したら、Yesボタンを押して開始してください。")
+      (x::window-main-one)
+      (when *speak*
+        (speak-jp "画像データを集めます。")
+        (speak-jp "周りに障害物がないことを確認したら、Yesボタンを押して開始してください。"))
       (wait-for-user-input)
-      (setq cur-coords (send *ri* :state :worldcoords :copy-worldcoords))
+      (setq cur-coords (send (send *ri* :state :worldcoords) :copy-worldcoords))
+      (ros::ros-info "current coords : ~A" cur-coords)
       (setq mirror-centroid (recognize-bbox))
 
-      (dolist (base-offset-x (list -1000 -500 0 500 1000))
-        (dolist (base-offset-y (list -1000 -500 0 500 1000))
+      (dolist (base-offset-x (list -500 0 500))
+        (dolist (base-offset-y (list -500 0 500))
           (ros::set-param "~base_offset_x" base-offset-x)
           (ros::set-param "~base_offset_y" base-offset-y)
 
