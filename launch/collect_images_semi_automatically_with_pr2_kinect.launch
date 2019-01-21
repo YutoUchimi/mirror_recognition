@@ -68,8 +68,17 @@
           fname: tf_base_to_camera.yaml
           savetype: YAML
       params:
-        - key: /data_collection/view_frame
-          fname: view_frame.txt
+        - key: /base_offset_x
+          fname: base_offset_x.txt
+          savetype: Text
+        - key: /base_offset_y
+          fname: base_offset_y.txt
+          savetype: Text
+        - key: /head_offset_y
+          fname: head_offset_y.txt
+          savetype: Text
+        - key: /head_offset_z
+          fname: head_offset_z.txt
           savetype: Text
       approximate_sync: true
       slop: 1.0
