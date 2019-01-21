@@ -5,7 +5,9 @@
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
   <arg name="manager" default="collect_images_manager"/>
-  <arg name="show_irtviewer" default="false"/>
+  <arg name="show_irtviewer" default="true"/>
+  <arg name="speak" value="false"/>
+
 
   <node name="$(arg manager)"
         pkg="nodelet" type="nodelet"
@@ -59,11 +61,11 @@
           msg_class: sensor_msgs/Image
           fname: depth.npz
           savetype: DepthImage
-        - name: /tf_to_transform_map_to_camera
+        - name: /tf_to_transform_map_to_camera/output
           msg_class: geometry_msgs/TransformStamped
           fname: tf_map_to_camera.yaml
           savetype: YAML
-        - name: /tf_to_transform_base_to_camera
+        - name: /tf_to_transform_base_to_camera/output
           msg_class: geometry_msgs/TransformStamped
           fname: tf_base_to_camera.yaml
           savetype: YAML
@@ -120,6 +122,7 @@
     <remap from="~head_offset_y" to="/head_offset_y"/>
     <rosparam subst_value="true">
       show_irtviewer: $(arg show_irtviewer)
+      speak: $(arg speak)
     </rosparam>
   </node>
 
