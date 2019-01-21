@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /InteractiveMarkers1
       Splitter Ratio: 0.5
     Tree Height: 853
   - Class: rviz/Selection
@@ -17,7 +16,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.588679
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -39,7 +38,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -51,130 +50,14 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Class: rviz/TF
-      Enabled: false
-      Frame Timeout: 15
-      Frames:
-        All Enabled: true
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: true
-      Tree:
-        {}
-      Update Interval: 0
-      Value: false
-    - Class: jsk_rviz_plugin/CameraInfo
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
       Enabled: true
-      Image Topic: ""
-      Name: RGBCameraInfo
-      Topic: /kinect_head/rgb/camera_info
+      Name: Map
+      Topic: /map
       Unreliable: false
-      Value: true
-      alpha: 0.5
-      color: 85; 255; 255
-      edge color: 85; 255; 255
-      far clip: 0.100000001
-      not show side polygons: true
-      show edges: true
-      show polygons: false
-      use image: false
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /kinect_head/rgb/image_rect_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: KinectRGB
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
-    - Class: jsk_rviz_plugin/CameraInfo
-      Enabled: false
-      Image Topic: ""
-      Name: DepthCameraInfo
-      Topic: /kinect_head/depth/camera_info
-      Unreliable: false
-      Value: false
-      alpha: 0.5
-      color: 85; 255; 255
-      edge color: 85; 255; 255
-      far clip: 0.100000001
-      not show side polygons: true
-      show edges: true
-      show polygons: false
-      use image: false
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /kinect_head/depth_registered/hw_registered/image_rect_viz/output
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: KinectDepth
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: KinectPoint
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /kinect_head/depth_registered/quater/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Background Alpha: 0.200000003
-      Background Color: 0; 0; 0
-      Class: jsk_rviz_plugin/OverlayText
-      Enabled: true
-      Foreground Alpha: 0.800000012
-      Foreground Color: 25; 255; 240
-      Name: ROSConsole
-      Overtake Color Properties: true
-      Overtake Position Properties: true
-      Topic: /rosconsole_overlay_text/output
-      Value: true
-      font: DejaVu Sans Mono
-      height: 500
-      left: 0
-      line width: 2
-      text size: 10
-      top: 0
-      width: 400
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: true
-      Name: InteractiveMarkers
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /simple_marker/update
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -640,11 +523,135 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Class: jsk_rviz_plugin/CameraInfo
+      Enabled: true
+      Image Topic: ""
+      Name: RGBCameraInfo
+      Topic: /kinect_head/rgb/camera_info
+      Unreliable: false
+      Value: true
+      alpha: 0.5
+      color: 85; 255; 255
+      edge color: 85; 255; 255
+      far clip: 0.1
+      not show side polygons: true
+      show edges: true
+      show polygons: false
+      use image: false
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /kinect_head/rgb/image_rect_color
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: KinectRGB
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: jsk_rviz_plugin/CameraInfo
+      Enabled: false
+      Image Topic: ""
+      Name: DepthCameraInfo
+      Topic: /kinect_head/depth/camera_info
+      Unreliable: false
+      Value: false
+      alpha: 0.5
+      color: 85; 255; 255
+      edge color: 85; 255; 255
+      far clip: 0.1
+      not show side polygons: true
+      show edges: true
+      show polygons: false
+      use image: false
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /kinect_head/depth_registered/hw_registered/image_rect_viz/output
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: KinectDepth
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: KinectPoint
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /kinect_head/depth_registered/quater/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Background Alpha: 0.6
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.8
+      Foreground Color: 25; 255; 240
+      Name: ROSConsole
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /rosconsole_overlay_text/output
+      Value: true
+      font: DejaVu Sans Mono
+      height: 500
+      left: 0
+      line width: 2
+      text size: 10
+      top: 0
+      width: 400
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /simple_marker/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Default Light: true
-    Fixed Frame: base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -665,25 +672,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.90625954
+      Distance: 6.76746
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.617994726
-        Y: 0.557938159
-        Z: 0.455341846
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
-      Invert Z Axis: false
+        X: 3.83809
+        Y: 6.86372
+        Z: 0.624298
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.839796364
+      Near Clip Distance: 0.01
+      Pitch: 0.609796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.75538349
+      Yaw: 3.35038
     Saved: ~
 Window Geometry:
   Displays:
@@ -695,7 +699,7 @@ Window Geometry:
     collapsed: false
   KinectRGB:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000396fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000396000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000016005900650073004e006f0042007500740074006f006e000000037b000000430000004300ffffff00000001000001b600000396fc0200000005fb00000012004b0069006e0065006300740052004700420100000028000001c60000001600fffffffb00000016004b0069006e0065006300740044006500700074006801000001f4000001ca0000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006501000000000000073f0000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000004130000039600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000396fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000396000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000016005900650073004e006f0042007500740074006f006e000000037b000000430000004300ffffff00000001000001b600000396fc0200000005fb00000012004b0069006e0065006300740052004700420100000028000001c60000001600fffffffb00000016004b0069006e0065006300740044006500700074006801000001f4000001ca0000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006501000000000000073f000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000004130000039600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
