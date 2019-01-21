@@ -1,9 +1,9 @@
 #!/usr/bin/env roseus
 ;; -*- coding: utf-8 -*-
 
-(ros::load-ros-manifest "jsk_gui_msgs")
-(ros::load-ros-manifest "jsk_recognition_msgs")
-(ros::load-ros-manifest "std_srvs")
+(ros::load-ros-package "jsk_gui_msgs")
+(ros::load-ros-package "jsk_recognition_msgs")
+(ros::load-ros-package "std_srvs")
 
 (require "models/room73b2-scene.l")
 (require "package://pr2eus/pr2-interface.l")
