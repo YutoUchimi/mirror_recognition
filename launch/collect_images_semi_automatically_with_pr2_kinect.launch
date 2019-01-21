@@ -74,11 +74,11 @@
         - key: /base_offset_y
           fname: base_offset_y.txt
           savetype: Text
+        - key: /head_offset_p
+          fname: head_offset_p.txt
+          savetype: Text
         - key: /head_offset_y
           fname: head_offset_y.txt
-          savetype: Text
-        - key: /head_offset_z
-          fname: head_offset_z.txt
           savetype: Text
       approximate_sync: true
       slop: 1.0
@@ -116,8 +116,8 @@
     <remap from="~save_request" to="data_collection_server/save_request"/>
     <remap from="~base_offset_x" to="/base_offset_x"/>
     <remap from="~base_offset_y" to="/base_offset_y"/>
+    <remap from="~head_offset_p" to="/head_offset_p"/>
     <remap from="~head_offset_y" to="/head_offset_y"/>
-    <remap from="~head_offset_z" to="/head_offset_z"/>
     <rosparam subst_value="true">
       show_irtviewer: $(arg show_irtviewer)
     </rosparam>

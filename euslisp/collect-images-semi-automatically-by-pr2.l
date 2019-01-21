@@ -20,8 +20,8 @@ Calling services
 Setting parameters
   - ``~base_offset_x`` (int)
   - ``~base_offset_y`` (int)
+  - ``~head_offset_p`` (int)
   - ``~head_offset_y`` (int)
-  - ``~head_offset_z`` (int)
 |#
 
 
@@ -36,12 +36,12 @@ Setting parameters
     (setq *show-irtviewer* (ros::get-param "~show_irtviewer"))
     (unless (boundp '*ri*)
       (pr2-init nil))
-    (unless (boundp '*room*)
-      (setq *room* (room73b2)))
-    (send *room* :move-to
-          (make-coords :pos (float-vector 0 6675 0)
-                       :rpy (float-vector 0 0 0)) :world)
     (when *show-irtviewer*
+      (unless (boundp '*room*)
+        (setq *room* (room73b2)))
+      (send *room* :move-to
+            (make-coords :pos (float-vector 0 6675 0)
+                         :rpy (float-vector 0 0 0)) :world)
       (objects (list *pr2* *room*)))
 
     (pr2-tuckarm-pose)
@@ -97,12 +97,18 @@ Setting parameters
     ))
 
 
-(defun move-head-multi-view (mirror-centroid offset-y offset-z)
-  (let* ((target-pos (float-vector (aref mirror-centroid 0)
-                                   (+ (aref mirror-centroid 1) offset-y)
-                                   (+ (aref mirror-centroid 2) offset-z))))
+(defun move-head-multi-view (mirror-centroid offset-p-deg offset-y-deg)
+  (let* ((target-coords (make-coords :pos mirror-centroid)))
     (ros::ros-info "Moving head...")
-    (send *pr2* :head :look-at target-pos)
+    (send *pr2* :head :look-at (send target-coords :worldpos))
+    (send *pr2* :head :neck-p :joint-angle
+          (+ (send *pr2* :head :neck-p :joint-angle) offset-p-deg))
+    (send *pr2* :head :neck-y :joint-angle
+          (+ (send *pr2* :head :neck-y :joint-angle) offset-y-deg))
+    (ros::ros-info "Pitch angle of neck: ~A [degree]"
+                   (send *pr2* :head :neck-p :joint-angle))
+    (ros::ros-info "Yaw angle of neck  : ~A [degree]"
+                   (send *pr2* :head :neck-y :joint-angle))
     (redraw)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -122,7 +128,7 @@ Setting parameters
             (one-shot-subscribe "~bbox" jsk_recognition_msgs::BoundingBox))
       )
 
-    ;; Get position of bbox (frame: /base_link)
+    ;; Get position of bbox (required frame: /map)
     ;; Convert metric: m -> mm
     (setq centroid
           (float-vector
@@ -131,7 +137,7 @@ Setting parameters
            (* 1000 (send (send (send bbox-msg :pose) :position) :z))))
 
     (speak-jp "注目すべき場所を教えてもらいました。")
-    (ros::ros-info "Bounding box found at frame /base_link : ~a" centroid)
+    (ros::ros-info "Bounding box found at frame /map : ~a" centroid)
     (return-from recognize-bbox centroid)
     ))
 
@@ -158,13 +164,13 @@ Setting parameters
           ;; Move base
           (move-base-multi-view cur-coords base-offset-x base-offset-y)
 
-          (dolist (head-offset-y (list -500 0 500))
-            (dolist (head-offset-z (list -500 0 500))
+          (dolist (head-offset-p (list -20 0 20))
+            (dolist (head-offset-y (list -20 0 20))
+              (ros::set-param "~head_offset_p" head-offset-p)
               (ros::set-param "~head_offset_y" head-offset-y)
-              (ros::set-param "~head_offset_z" head-offset-z)
 
               ;; Move head
-              (move-head-multi-view mirror-centroid head-offset-y head-offset-z)
+              (move-head-multi-view mirror-centroid head-offset-p head-offset-y)
               (unix:sleep 1)
 
               ;; Save request
