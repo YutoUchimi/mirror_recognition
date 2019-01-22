@@ -105,6 +105,11 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
         if not self.model_ready:
             return
 
+        # Model output: (0.4, 5.1) for converging at sigmoid function
+        # Required model input: (0.5, 5.0)
+        self.min_value = self.model.min_depth + 0.1
+        self.max_value = self.model.max_depth - 0.1
+
         br = cv_bridge.CvBridge()
         img_bgr = br.imgmsg_to_cv2(
             img_msg, desired_encoding='bgr8').astype(np.float32)
@@ -116,15 +121,22 @@ class FCNMirrorSegmentationDepthEstimation(ConnectionBasedTransport):
             [104.00698793, 116.66876762, 122.67891434], dtype=np.float32)
         img_bgr_chw = (img_bgr - mean_bgr).transpose((2, 0, 1))
 
-        # depth_nan2zero: (1, H, W)
-        depth_nan2zero = depth.copy()
+        # depth -> depth_limited -> depth_nan2zero: (H, W) -> (1, H, W)
+        depth_limited = depth.copy()
+        depth_limited[depth_limited == 0] = np.nan
+        depth_limited_keep = ~np.isnan(depth_limited)
+        depth_limited[depth_limited_keep] = np.maximum(
+            depth_limited[depth_limited_keep], self.min_value)
+        depth_limited[depth_limited_keep] = np.minimum(
+            depth_limited[depth_limited_keep], self.max_value)
+        depth_nan2zero = depth_limited.copy()
         depth_nan2zero[np.isnan(depth_nan2zero)] = 0.0
         depth_nan2zero = depth_nan2zero[np.newaxis, :, :]
 
         # depth: (3, H, W)
         depth_bgr = self._colorize_depth(
             depth,
-            min_value=self.model.min_depth, max_value=self.model.max_depth
+            min_value=self.min_value, max_value=self.max_value
         ).astype(np.float32)
         depth_bgr_chw = (depth_bgr - mean_bgr).transpose((2, 0, 1))
 
