@@ -43,8 +43,10 @@ def split_data(src_dir, dst_dir, ratio):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--src_dir', type=str, required=True)
-    parser.add_argument('-d', '--dst_dir', type=str, required=True)
+    parser.add_argument('-s', '--src_dir', type=str, required=True,
+                        help='Must contain timestamp directories')
+    parser.add_argument('-d', '--dst_dir', type=str, required=True,
+                        help='Output directory which contains train and test')
     parser.add_argument('-r', '--ratio', type=int, required=True,
                         help='[train] : [test] = ratio : 1')
     args = parser.parse_args()
