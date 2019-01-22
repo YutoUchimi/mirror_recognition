@@ -1,8 +1,7 @@
 <launch>
 
   <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/raw_data/20190121/before_split" />
-  <!-- <arg name="CAMERA_FRAME" value="head_mount_kinect_rgb_optical_frame"/> -->
-  <arg name="CAMERA_FRAME" value="map"/>
+  <arg name="CAMERA_FRAME" value="head_mount_kinect_rgb_optical_frame"/>
   <arg name="gui" default="true" />
 
   <!-- Change these if you want to use different mesh model -->
