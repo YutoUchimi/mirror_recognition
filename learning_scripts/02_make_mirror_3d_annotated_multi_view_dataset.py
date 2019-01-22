@@ -95,6 +95,16 @@ def copy_head_offset_y(head_offset_y_file, out_dir):
     shutil.copy(head_offset_y_file, osp.join(out_dir, 'head_offset_y.txt'))
 
 
+def copy_tf_base_to_cam(tf_base_to_cam_file, out_dir):
+    shutil.copy(tf_base_to_cam_file,
+                osp.join(out_dir, 'tf_base_to_camera.yaml'))
+
+
+def copy_tf_map_to_cam(tf_map_to_cam_file, out_dir):
+    shutil.copy(tf_map_to_cam_file,
+                osp.join(out_dir, 'tf_map_to_camera.yaml'))
+
+
 def get_mesh(mesh_id):
     shapenet_root = osp.expanduser('~/data/ShapeNetCore.v2.scaled')
     off_files = osp.join(
@@ -161,6 +171,10 @@ def main(src_dir, dst_dir, split):
             raw_split_dir, stamp_dir, 'head_offset_p.txt')
         head_offset_y_file = osp.join(
             raw_split_dir, stamp_dir, 'head_offset_y.txt')
+        tf_base_to_cam_file = osp.join(
+            raw_split_dir, stamp_dir, 'tf_base_to_camera.yaml')
+        tf_map_to_cam_file = osp.join(
+            raw_split_dir, stamp_dir, 'tf_map_to_camera.yaml')
         required_files = [
             json_file,
             depth_file,
@@ -171,7 +185,9 @@ def main(src_dir, dst_dir, split):
             base_offset_x_file,
             base_offset_y_file,
             head_offset_p_file,
-            head_offset_y_file
+            head_offset_y_file,
+            tf_base_to_cam_file,
+            tf_map_to_cam_file
         ]
         for f in required_files:
             if not osp.exists(json_file):
@@ -192,6 +208,8 @@ def main(src_dir, dst_dir, split):
         copy_base_offset_y(base_offset_y_file, out_dir)
         copy_head_offset_p(head_offset_p_file, out_dir)
         copy_head_offset_y(head_offset_y_file, out_dir)
+        copy_tf_base_to_cam(tf_base_to_cam_file, out_dir)
+        copy_tf_map_to_cam(tf_map_to_cam_file, out_dir)
         save_generated_depth_gt(
             depth_file, cam_info_file, tf_camera_to_obj_file, mesh_id_file,
             out_dir)
