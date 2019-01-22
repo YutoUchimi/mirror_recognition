@@ -82,9 +82,7 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
                 initialW=fcn.initializers.UpsamplingDeconvWeight())
             self.conv1_1_depth = L.Convolution2D(
                 1 + n_class, 64, 3, 1, 1, **kwargs)
-            self.batch_norm1 = L.BatchNormalization(64)
             self.conv1_2_depth = L.Convolution2D(64, 64, 3, 1, 1, **kwargs)
-            self.batch_norm2 = L.BatchNormalization(64)
             self.conv1_3_depth = L.Convolution2D(64, 1, 3, 1, 1, **kwargs)
 
     def predict_label(self, bgr, depth_bgr):
@@ -229,8 +227,8 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
 
         concatenated = F.concat((depth, score_label), axis=1)
         concatenated.set_creator(None)
-        h = F.relu(self.batch_norm1(self.conv1_1_depth(concatenated)))
-        h = F.relu(self.batch_norm2(self.conv1_2_depth(h)))
+        h = F.relu(self.conv1_1_depth(concatenated))
+        h = F.relu(self.conv1_2_depth(h))
         h = self.conv1_3_depth(h)
         conv1_depth = h  # 1/1
 
@@ -294,6 +292,9 @@ class FCN8sMirrorSegmentationDepthEstimation(chainer.Chain):
         loss = coef[0] * seg_loss + coef[1] * reg_loss
         if self.xp.isnan(float(loss.data)):
             raise ValueError('Loss is nan.')
+
+        batch_size = len(score_label)
+        assert batch_size == 1
 
         # GPU -> CPU
         # N, C, H, W -> C, H, W
