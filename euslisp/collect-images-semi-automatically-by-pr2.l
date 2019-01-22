@@ -142,7 +142,7 @@ Setting parameters
           (float-vector
            (* 1000 (send (send (send bbox-msg :pose) :position) :x))
            (* 1000 (send (send (send bbox-msg :pose) :position) :y))
-           ;; For euslisp. /eng2/7f is 30000 [mm] height in euslisp.
+           ;; For euslisp. /eng2/7f is 30000 [mm] height in euslisp model.
            (+ 30000 (* 1000 (send (send (send bbox-msg :pose) :position) :z)))))
 
     (when *speak*
@@ -163,14 +163,25 @@ Setting parameters
       (x::window-main-one)
       (when *speak*
         (speak-jp "画像データを集めます。")
-        (speak-jp "周りに障害物がないことを確認したら、Yesボタンを押して開始してください。"))
+        (speak-jp "前方に障害物がないことを確認したら、Yesボタンを押して開始してください。"))
       (wait-for-user-input)
+
+      ;; Self relocalization
+      (when *speak*
+        (speak-jp "その場で旋回します。"))
+      (dolist (i (list 0 1 2))
+        (send *ri* :go-pos 0 0 120))
+      (update-*pr2*)
+
+      ;; Get current coords for reference
       (setq cur-coords (send (send *ri* :state :worldcoords) :copy-worldcoords))
       (ros::ros-info "current coords : ~A" cur-coords)
+
+      ;; Subscribe bbox
       (setq mirror-centroid (recognize-bbox))
 
-      (dolist (base-offset-x (list -500 0 500))
-        (dolist (base-offset-y (list -500 0 500))
+      (dolist (base-offset-x (list 0 500 1000 1500 2000))
+        (dolist (base-offset-y (list 0))
           (ros::set-param "~base_offset_x" base-offset-x)
           (ros::set-param "~base_offset_y" base-offset-y)
 
