@@ -22,6 +22,7 @@ Getting parameters
   - ``~speak`` (bool)
 
 Setting parameters
+  - ``~scene_id`` (int)
   - ``~base_offset_x`` (int)
   - ``~base_offset_y`` (int)
   - ``~head_offset_p`` (int)
@@ -165,6 +166,9 @@ Setting parameters
         (speak-jp "画像データを集めます。")
         (speak-jp "前方に障害物がないことを確認したら、Yesボタンを押して開始してください。"))
       (wait-for-user-input)
+
+      ;; Get current time
+      (ros::set-param "~scene_id" (send (ros::time-now) :to-nsec))
 
       ;; Self relocalization
       (when *speak*

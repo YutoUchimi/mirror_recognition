@@ -70,6 +70,9 @@
           fname: tf_base_to_camera.yaml
           savetype: YAML
       params:
+        - key: /scene_id
+          fname: scene_id.txt
+          savetype: Text
         - key: /base_offset_x
           fname: base_offset_x.txt
           savetype: Text
@@ -116,6 +119,7 @@
     <remap from="~bbox" to="bbox_array_to_bbox/output"/>
     <remap from="~yes_no_button" to="rqt_yn_btn"/>
     <remap from="~save_request" to="data_collection_server/save_request"/>
+    <remap from="~scene_id" to="/scene_id"/>
     <remap from="~base_offset_x" to="/base_offset_x"/>
     <remap from="~base_offset_y" to="/base_offset_y"/>
     <remap from="~head_offset_p" to="/head_offset_p"/>
