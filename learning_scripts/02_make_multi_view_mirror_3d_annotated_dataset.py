@@ -100,7 +100,7 @@ def save_generated_depth_gt_label_gt(
 
     # Update mask_mirror according to depth_gt, and convert it to label image
     mask_gt = mask_mirror.copy()
-    mask_gt[depth_nan2inf < depth_gt] = False
+    mask_gt[depth_nan2inf < depth_mirror_nan2inf] = False
     label_gt = mask_gt.astype(np.int32)
 
     # Save generated depth
