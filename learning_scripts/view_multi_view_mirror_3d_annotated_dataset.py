@@ -16,9 +16,12 @@ def main():
                         choices=['train', 'test'])
     parser.add_argument('-a', '--aug', type=int, default=0,
                         help='Enable data augmentation if this is set to 1')
+    parser.add_argument('-n', '--num_view', type=int, default=1,
+                        help='Number of getting example at the same time')
     args = parser.parse_args()
 
-    dataset = MultiViewMirror3DAnnotatedDataset(args.split, aug=args.aug)
+    dataset = MultiViewMirror3DAnnotatedDataset(
+        args.split, aug=args.aug, num_view=args.num_view)
     mvtk.datasets.view_dataset(
         dataset, MultiViewMirror3DAnnotatedDataset.visualize)
 
