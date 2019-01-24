@@ -47,9 +47,6 @@ def colorize_depth(depth, min_value=None, max_value=None):
 def transform(in_data):
     min_value = 0.5
     max_value = 5.0
-    image_bgrs = []
-    depth_nan2zeros = []
-    depth_bgrs = []
 
     label_gt = in_data[0][2]
     depth_gt = in_data[0][3]
