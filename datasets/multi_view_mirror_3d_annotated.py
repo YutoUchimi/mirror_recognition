@@ -93,6 +93,8 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
             for idx in sampling_scene_indices:
                 examples.append(self._get_example(self._files_dirs[idx], idx))
 
+        assert len(examples) == self.num_view
+
         return examples
 
     def _get_example(self, files_dir, idx):
