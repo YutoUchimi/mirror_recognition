@@ -43,12 +43,14 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
     min_value = 0.5
     max_value = 5.0
 
-    def __init__(self, split, aug=False):
+    def __init__(self, split, aug=False, num_view=1):
         assert split in ['train', 'test']
         self.split = split
         self.aug = aug
+        self.num_view = num_view
 
         self._files_dirs = []
+        self._scenes = []
         for date_dir in sorted(os.listdir(self.root_dir)):
             date_dir = osp.join(self.root_dir, date_dir)
             split_dir = osp.join(date_dir, split)
@@ -60,13 +62,40 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
                     'Expected: {}\nActual: {}'
                     .format(files_dir, self._files, files))
                 self._files_dirs.append(files_dir)
+                with open(osp.join(files_dir, 'scene_id.txt'), 'r') as f:
+                    self._scenes.append(str(f.readline()).rstrip())
 
     def __len__(self):
         return len(self._files_dirs)
 
     def get_example(self, i):
-        files_dir = self._files_dirs[i]
+        examples = []
 
+        # Append index == i as first example
+        examples.append(self._get_example(self._files_dirs[i], i))
+
+        if self.num_view != 1:
+            if self.split == 'train':
+                assert self.num_view >= 2 and self.num_view <= 36
+            else:
+                assert self.num_view >= 2 and self.num_view <= 9
+
+            # Append index != i but chosen from the same scene.
+            # Random sampling? Random permutation?
+            same_scene_indices = [
+                idx for idx, x in enumerate(self._scenes)
+                if x == self._scenes[i]
+            ]
+            same_scene_indices.remove(i)
+            np.random.seed()
+            sampling_scene_indices = np.random.permutation(
+                same_scene_indices)[:self.num_view - 1]
+            for idx in sampling_scene_indices:
+                examples.append(self._get_example(self._files_dirs[idx], idx))
+
+        return examples
+
+    def _get_example(self, files_dir, idx):
         image_file = osp.join(files_dir, 'image.png')
         image = skimage.io.imread(image_file)
         assert image.dtype == np.uint8
@@ -153,7 +182,7 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
                 depth_gt = self.rotate_depth_image(
                     depth_gt, angle, cv2.INTER_LINEAR)
 
-        return image, depth, label, depth_gt
+        return image, depth, label, depth_gt, idx
 
     def rotate_image(self, in_img, angle, flags=cv2.INTER_LINEAR):
         rot_mat = cv2.getRotationMatrix2D(
@@ -181,21 +210,26 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         return rot_img
 
     def visualize(self, index):
-        image, depth, label, depth_gt = self[index]
+        examples = self[index]
 
         print('[%04d] %s' % (index, '>' * 75))
-        print('image_shape: %s' % repr(image.shape))
-        print('depth min:  %f' % np.nanmin(depth))
-        print('depth mean: %f' % np.nanmean(depth))
-        print('depth max:  %f' % np.nanmax(depth))
+        print('got example indices: {}'.format(
+            [example[4] for example in examples]))
         print('[%04d] %s' % (index, '<' * 75))
-        depth_viz = mvtk.image.colorize_depth(
-            depth, min_value=self.min_value, max_value=self.max_value)
-        label = mvtk.image.label2rgb(
-            label.astype(np.int32), img=image,
-            label_names=self.class_names, alpha=0.7)
-        depth_gt_viz = mvtk.image.colorize_depth(
-            depth_gt, min_value=self.min_value, max_value=self.max_value)
-        viz = mvtk.image.tile(
-            [image, depth_viz, label, depth_gt_viz], (2, 2))
-        return mvtk.image.resize(viz, size=600 * 600)  # for small window
+
+        viz = []
+        for i, example in enumerate(examples):
+            image, depth, label, depth_gt, idx = example
+            depth_viz = mvtk.image.colorize_depth(
+                depth, min_value=self.min_value, max_value=self.max_value)
+            label = mvtk.image.label2rgb(
+                label.astype(np.int32), img=image,
+                label_names=self.class_names, alpha=0.7)
+            depth_gt_viz = mvtk.image.colorize_depth(
+                depth_gt, min_value=self.min_value, max_value=self.max_value)
+            viz.append(mvtk.image.tile(
+                [image, depth_viz, label, depth_gt_viz], (2, 2)))
+
+        viz_all = mvtk.image.tile(viz, (1, len(examples)))
+
+        return mvtk.image.resize(viz_all, size=600 * 600)  # for small window
