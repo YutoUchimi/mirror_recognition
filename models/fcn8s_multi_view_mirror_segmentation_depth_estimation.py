@@ -29,7 +29,7 @@ class FCN8sMultiViewMirrorSegmentationDepthEstimation(chainer.Chain):
         super(FCN8sMultiViewMirrorSegmentationDepthEstimation, self).__init__()
         with self.init_scope():
             self.conv1_1 = L.Convolution2D(
-                (3 + 3) * num_view, 64, 3, 1, 100, **kwargs)
+                3 * num_view + 3, 64, 3, 1, 100, **kwargs)
             self.conv1_2 = L.Convolution2D(64, 64, 3, 1, 1, **kwargs)
 
             self.conv2_1 = L.Convolution2D(64, 128, 3, 1, 1, **kwargs)
@@ -87,7 +87,10 @@ class FCN8sMultiViewMirrorSegmentationDepthEstimation(chainer.Chain):
             self.conv1_3_depth = L.Convolution2D(64, 1, 3, 1, 1, **kwargs)
 
     def predict_label(self, bgrs, depth_bgrs):
-        h = F.concat((bgrs, depth_bgrs), axis=1)
+        # (N, 3 * num_view, H, W)  -> (N, 3, H, W)
+        depth_bgr = depth_bgrs[:, :3, :, :]
+
+        h = F.concat((bgrs, depth_bgr), axis=1)
 
         h = F.relu(self.conv1_1(h))
         h = F.relu(self.conv1_2(h))
