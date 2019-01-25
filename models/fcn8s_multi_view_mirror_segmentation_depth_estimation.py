@@ -387,13 +387,11 @@ class FCN8sMultiViewMirrorSegmentationDepthEstimation(chainer.Chain):
                 l1 = getattr(vgg16, l.name)
                 l2 = getattr(self, l.name)
                 assert l1.W.shape[0] == l2.W.shape[0]
-                assert l1.W.shape[1] * 2 * self.num_view == l2.W.shape[1]
+                assert l1.W.shape[1] * (self.num_view + 1) == l2.W.shape[1]
                 assert l1.W.shape[2:] == l2.W.shape[2:]
                 assert l1.b.shape == l2.b.shape
-                # l2.W.data[:, :l1.W.shape[1], :, :] = l1.W.data[...]
-                # l2.W.data[:, l1.W.shape[1]:, :, :] = l1.W.data[...]
                 l2.W.data[...] = self.xp.tile(
-                    l1.W.data[...], (1, 2 * self.num_view, 1, 1))
+                    l1.W.data[...], (1, self.num_view + 1, 1, 1))
                 l2.b.data[...] = l1.b.data[...]
             elif l.name.startswith('conv') and hasattr(vgg16, l.name):
                 l1 = getattr(vgg16, l.name)
