@@ -1,12 +1,14 @@
 <launch>
 
   <arg name="save_dir"
-       value="~/data/mvtk/mirror_recognition/raw_data/20190122/mirror_with_frame"/>
+       value="~/data/mvtk/mirror_recognition/raw_data/20190126/before_split"/>
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
   <arg name="manager" default="collect_images_manager"/>
   <arg name="show_irtviewer" default="true"/>
   <arg name="speak" value="false"/>
+  <arg name="rviz" default="true"/>
+  <arg name="data_collection_server" default="true"/>
 
 
   <node name="$(arg manager)"
@@ -43,12 +45,13 @@
 
 
   <!-- Data collection -->
-  <node name="data_collection_server"
-        pkg="jsk_data" type="data_collection_server.py"
-        clear_params="true" output="screen">
-    <rosparam subst_value="true">
-      save_dir: $(arg save_dir)
-      topics:
+  <group if="$(arg data_collection_server)">
+    <node name="data_collection_server"
+          pkg="jsk_data" type="data_collection_server.py"
+          clear_params="true" output="screen">
+      <rosparam subst_value="true">
+        save_dir: $(arg save_dir)
+        topics:
         - name: /kinect_head/rgb/camera_info
           msg_class: sensor_msgs/CameraInfo
           fname: camera_info.yaml
@@ -69,7 +72,7 @@
           msg_class: geometry_msgs/TransformStamped
           fname: tf_base_to_camera.yaml
           savetype: YAML
-      params:
+        params:
         - key: /scene_id
           fname: scene_id.txt
           savetype: Text
@@ -85,10 +88,12 @@
         - key: /head_offset_y
           fname: head_offset_y.txt
           savetype: Text
-      approximate_sync: true
-      slop: 1.0
-    </rosparam>
-  </node>
+        message_filters: true
+        approximate_sync: true
+        slop: 1.0
+      </rosparam>
+    </node>
+  </group>
   <node name="tf_to_transform_map_to_camera"
         pkg="jsk_topic_tools" type="tf_to_transform.py"
         output="screen"
@@ -144,9 +149,11 @@
       </rosparam>
     </node>
   </group>
-  <node name="rviz"
-        pkg="rviz" type="rviz"
-        args="-d $(find mirror_recognition)/rvizconfig/pr2_kinect.rviz"/>
+  <group if="$(arg rviz)">
+      <node name="rviz"
+            pkg="rviz" type="rviz"
+            args="-d $(find mirror_recognition)/rvizconfig/pr2_kinect.rviz"/>
+  </group>
   <node name="rosconsole_overlay_text"
         pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
         output="screen"
