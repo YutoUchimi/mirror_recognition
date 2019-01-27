@@ -43,12 +43,38 @@
     </node>
   </group>
 
+  <!-- Assemble /tilt_scan. -->
+  <!-- The point cloud is published only when service is called. -->
+  <node name="tilt_scan_assembler"
+        pkg="laser_assembler" type="laser_scan_assembler"
+        output="screen" respawn="true">
+    <remap from="scan" to="/tilt_scan"/>
+    <remap from="assemble_scans2" to="assemble_tilt_scan"/>
+    <rosparam>
+      fixed_frame: laser_tilt_link
+      max_scans: 400
+    </rosparam>
+  </node>
+
+  <!-- Always publish assembled scans as timer -->
+  <node name="assembled_scans_timer_publisher"
+        pkg="mirror_recognition" type="assembled_scans_timer_publisher.py"
+        output="screen"
+        respawn="true">
+    <remap from="~assemble_scans2" to="assemble_tilt_scan"/>
+    <rosparam>
+      rate: 40
+      duration: 2.0
+    </rosparam>
+  </node>
+
   <!-- Main Process -->
   <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
     <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
     <arg name="INPUT_INFO" value="/kinect_head_remote/rgb/camera_info"/>
     <arg name="INPUT_DEPTH" value="/kinect_head_remote/depth_registered/hw_registered/image_rect"/>
-    <arg name="INPUT_CLOUD" value="/kinect_head_remote/depth_registered/points"/>
+    <!-- <arg name="INPUT_CLOUD" value="/kinect_head_remote/depth_registered/points"/> -->
+    <arg name="INPUT_CLOUD" value="assembled_scans_timer_publisher/output"/>
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
     <arg name="model_dir" value="$(find mirror_recognition)/logs/20190116-122456"/>
