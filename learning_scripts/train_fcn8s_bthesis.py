@@ -187,7 +187,7 @@ def main():
 
     trainer = chainer.training.Trainer(updater, max_iter_epoch, out=out)
 
-    trainer.extend(extensions.ExponentialShift("alpha", 0.99995))
+    trainer.extend(extensions.ExponentialShift("alpha", 0.99997))
 
     if not osp.isdir(out):
         os.makedirs(out)
