@@ -30,6 +30,7 @@
   <exec_depend>jsk_perception</exec_depend>
   <exec_depend>jsk_rqt_plugins</exec_depend>
   <exec_depend>jsk_rviz_plugins</exec_depend>
+  <exec_depend>laser_assembler</exec_depend>
   <exec_depend>roseus</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_srvs</exec_depend>
