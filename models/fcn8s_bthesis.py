@@ -776,12 +776,11 @@ class FCN8sAtOnceConcatAtOnce(FCN8sAtOnceInputRGBD):
 
         return depth_pred
 
-    def __call__(self, rgb, depth_viz, true_mask=None, true_depth=None,
-                 label_bp=True, depth_bp=True):
+    def __call__(self, rgb, depth_viz, true_mask=None, true_depth=None):
         score_label = self.predict_mask(rgb, return_pool5=False)
+        self.score_label = score_label
         depth_pred = self.predict_depth(
             rgb, score_label, depth_viz, true_mask)
-        self.score_label = score_label
         self.depth_pred = depth_pred
 
         if true_mask is None or true_depth is None:
