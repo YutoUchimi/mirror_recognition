@@ -89,11 +89,11 @@
     <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
     <arg name="INPUT_INFO" value="/kinect_head_remote/rgb/camera_info"/>
     <arg name="INPUT_DEPTH" value="/kinect_head_remote/depth_registered/hw_registered/image_rect"/>
-    <!-- <arg name="INPUT_CLOUD" value="/kinect_head_remote/depth_registered/points"/> -->
     <arg name="INPUT_CLOUD" value="point_cloud_xyzrgb_assembled_scans/output"/>
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
-    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190116-122456"/>
+    <arg name="fcn_at_once_concat_at_once" value="true"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190127-094644"/>
     <arg name="gpu" value="0"/>
   </include>
 

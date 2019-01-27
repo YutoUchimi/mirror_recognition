@@ -77,7 +77,8 @@
     <arg name="INPUT_CLOUD" value="assembled_scans_timer_publisher/output"/>
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
-    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190116-122456"/>
+    <arg name="fcn_at_once_concat_at_once" value="true"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190127-094644"/>
     <arg name="gpu" value="0"/>
   </include>
 

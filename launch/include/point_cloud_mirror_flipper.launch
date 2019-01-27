@@ -6,15 +6,27 @@
   <arg name="INPUT_CLOUD"/>
   <arg name="LAUNCH_MANAGER"/>
   <arg name="manager" default="mirror_recognition_manager"/>
+  <arg name="fcn_at_once_concat_at_once" default="false"/>
   <arg name="model_dir" default="$(find mirror_recognition)/logs/20190116-122456"/>
   <arg name="gpu" default="0"/>
 
-  <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation_depth_estimation.launch">
-    <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
-    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)"/>
-    <arg name="model_dir" value="$(arg model_dir)"/>
-    <arg name="gpu" value="$(arg gpu)"/>
-  </include>
+  <group unless="$(arg fcn_at_once_concat_at_once)">
+    <include file="$(find mirror_recognition)/launch/include/fcn_mirror_segmentation_depth_estimation.launch">
+      <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
+      <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)"/>
+      <arg name="model_dir" value="$(arg model_dir)"/>
+      <arg name="gpu" value="$(arg gpu)"/>
+    </include>
+  </group>
+
+  <group if="$(arg fcn_at_once_concat_at_once)">
+    <include file="$(find mirror_recognition)/launch/include/fcn_at_once_concat_at_once.launch">
+      <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
+      <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)"/>
+      <arg name="model_dir" value="$(arg model_dir)"/>
+      <arg name="gpu" value="$(arg gpu)"/>
+    </include>
+  </group>
 
   <group if="$(arg LAUNCH_MANAGER)">
     <node name="$(arg manager)"
