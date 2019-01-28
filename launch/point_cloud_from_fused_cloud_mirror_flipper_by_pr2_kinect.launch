@@ -1,8 +1,10 @@
 <launch>
 
+  <arg name="gpu" default="0"/>
   <arg name="rviz" default="true"/>
   <arg name="launch_manager" default="true"/>
   <arg name="manager" default="mirror_recognition_manager"/>
+  <arg name="people_pose_estimation" default="true"/>
 
   <group if="$(arg launch_manager)">
     <node name="$(arg manager)"
@@ -32,7 +34,7 @@
       <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
       <remap from="out" to="depth_registered/hw_registered/image_rect"/>
     </node>
-    <!-- 3D reconstruction -->
+    <!-- 3D reconstruction remotely from kinect. Only for visualization. -->
     <node name="point_cloud_xyzrgb_remote"
           pkg="nodelet" type="nodelet"
           args="load depth_image_proc/point_cloud_xyzrgb /$(arg manager)"
@@ -78,7 +80,7 @@
     </rosparam>
   </node>
 
-  <!-- Depth image fusion -->
+  <!-- Depth image fusion from kinect and wide_stereo -->
   <node name="fuse_depth_images"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/FuseDepthImages $(arg manager)"
@@ -107,6 +109,27 @@
     </rosparam>
   </node>
 
+  <!-- People detection -->
+  <group if="$(arg people_pose_estimation)">
+    <node name="people_pose_estimation_2d"
+          pkg="jsk_perception" type="people_pose_estimation_2d.py"
+          output="screen" respawn="true">
+      <remap from="~input" to="kinect_head_remote/rgb/image_rect_color"/>
+      <remap from="~input/depth" to="fuse_depth_images/output"/>
+      <remap from="~input/info" to="kinect_head_remote/rgb/camera_info"/>
+      <rosparam subst_value="true">
+        gpu: $(arg gpu)
+        model_file: $(find jsk_perception)/trained_data/pose_estimation_2d_chainermodel.pkl
+        with_depth: true
+        hand:
+          enable: false
+        approximate_sync: true
+        queue_size: 100
+        slop: 3.0
+      </rosparam>
+    </node>
+  </group>
+
   <!-- Main Process -->
   <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
     <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
@@ -117,7 +140,7 @@
     <arg name="manager" value="$(arg manager)"/>
     <arg name="fcn_at_once_concat_at_once" value="true"/>
     <arg name="model_dir" value="$(find mirror_recognition)/logs/20190128-004526"/>
-    <arg name="gpu" value="0"/>
+    <arg name="gpu" value="$(arg gpu)"/>
   </include>
 
   <!-- Visualization -->
