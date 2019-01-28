@@ -43,9 +43,16 @@
     </node>
   </group>
 
-  <rosparam>
-    /wide_stereo/wide_stereo_proc/correlation_window_size: 45
-  </rosparam>
+  <!-- Parameters for stereo_image_proc -->
+  <group ns="/wide_stereo/wide_stereo_proc">
+    <rosparam>
+      correlation_window_size: 25
+      min_disparity: -80
+      disparity_range: 128
+      uniqueness_ratio: 3.0
+      speckle_size: 300
+    </rosparam>
+  </group>
 
   <!-- Change frame_id -->
   <node name="tf_transform_cloud_wide_stereo"
