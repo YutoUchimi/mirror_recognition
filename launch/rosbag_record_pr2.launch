@@ -6,12 +6,19 @@
               -b 0
               /tf
               /tf_static
+              /map
+              /eng2/7f
               /joint_states
 
               /kinect_head/rgb/camera_info
               /kinect_head/rgb/image_rect_color/compressed
               /kinect_head/depth_registered/camera_info
               /kinect_head/depth_registered/hw_registered/image_rect/compressedDepth
+
+              /wide_stereo/left/camera_info
+              /wide_stereo/left/image_raw/compressed
+              /wide_stereo/right/camera_info
+              /wide_stereo/right/image_raw/compressed
 
               /base_scan
               /tilt_scan
