@@ -45,15 +45,52 @@
     </node>
   </group>
 
-  <!-- Parameters for stereo_image_proc -->
-  <group ns="/wide_stereo/wide_stereo_proc">
+  <!-- Parameters for wide_stereo -->
+  <group ns="/wide_stereo_both">
     <rosparam>
-      correlation_window_size: 25
-      min_disparity: -80
-      disparity_range: 128
-      uniqueness_ratio: 3.0
-      speckle_size: 300
+      imager_rate: 30.0
+      max_exposure: 0.0
     </rosparam>
+  </group>
+
+  <group ns="wide_stereo_remote">
+    <!-- Relay -->
+    <node name="relay_left_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/wide_stereo/left/camera_info /wide_stereo_remote/left/camera_info"
+          output="screen" respawn="true"/>
+    <node name="relay_right_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/wide_stereo/right/camera_info /wide_stereo_remote/right/camera_info"
+          output="screen" respawn="true"/>
+    <!-- Republish images -->
+    <node name="republish_left"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/wide_stereo/left/image_raw"/>
+      <remap from="out" to="left/image_raw"/>
+    </node>
+    <node name="republish_right"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/wide_stereo/right/image_raw"/>
+      <remap from="out" to="right/image_raw"/>
+    </node>
+    <!-- Stereo image proc remotely -->
+    <node name="wide_stereo_proc"
+          pkg="stereo_image_proc" type="stereo_image_proc"
+          output="screen" respawn="true"
+          clear_params="true">
+      <rosparam>
+        correlation_window_size: 25
+        min_disparity: -80
+        disparity_range: 128
+        uniqueness_ratio: 30.0
+        speckle_size: 300
+      </rosparam>
+    </node>
   </group>
 
   <!-- Change frame_id -->
@@ -61,7 +98,7 @@
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl_utils/TfTransformCloud $(arg manager)"
         output="screen" respawn="true">
-    <remap from="~input" to="/wide_stereo/points2"/>
+    <remap from="~input" to="/wide_stereo_remote/points2"/>
     <rosparam>
       target_frame_id: head_mount_kinect_rgb_optical_frame
     </rosparam>
@@ -76,7 +113,7 @@
     <remap from="~info" to="kinect_head_remote/rgb/camera_info"/>
     <rosparam>
       use_approximate: true
-      max_queue_size: 100
+      max_queue_size: 1000
     </rosparam>
   </node>
 
@@ -90,7 +127,7 @@
         - /kinect_head_remote/depth_registered/hw_registered/image_rect
         - /depth_image_creator_wide_stereo/output
       approximate_sync: true
-      queue_size: 100
+      queue_size: 1000
       averaging: false
     </rosparam>
   </node>
@@ -105,7 +142,7 @@
     <remap from="depth_registered/image_rect" to="fuse_depth_images/output"/>
     <remap from="depth_registered/points" to="~output"/>
     <rosparam>
-      queue_size: 100
+      queue_size: 1000
     </rosparam>
   </node>
 
@@ -124,7 +161,7 @@
         hand:
           enable: false
         approximate_sync: true
-        queue_size: 100
+        queue_size: 1000
         slop: 3.0
       </rosparam>
     </node>
@@ -139,7 +176,7 @@
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
     <arg name="fcn_at_once_concat_at_once" value="true"/>
-    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190128-004526"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190129-002133"/>
     <arg name="gpu" value="$(arg gpu)"/>
   </include>
 
