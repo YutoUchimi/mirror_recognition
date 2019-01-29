@@ -13,9 +13,9 @@
     <rosparam subst_value="true">
       model_dir: $(arg model_dir)
       gpu: $(arg gpu)
-      queue_size: 100
+      queue_size: 1000
       approximate_sync: true
-      slop: 0.1
+      slop: 0.5
       bg_label: 0
       proba_threshold: 0.5
     </rosparam>

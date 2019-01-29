@@ -45,7 +45,7 @@
     <remap from="depth_registered/image_rect" to="fcn_mirror_segmentation_depth_estimation/output/depth_pred_labeled"/>
     <remap from="depth_registered/points" to="fcn_mirror_segmentation_depth_estimation/output/points_labeled"/>
     <rosparam>
-      queue_size: 20
+      queue_size: 1000
     </rosparam>
   </node>
 
