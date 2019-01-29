@@ -1,0 +1,268 @@
+<launch>
+
+  <arg name="gpu" default="0"/>
+  <arg name="rviz" default="true"/>
+  <arg name="launch_manager" default="true"/>
+  <arg name="manager" default="mirror_recognition_manager"/>
+  <arg name="people_pose_estimation" default="true"/>
+
+  <!-- rosbag play -->
+  <param name="/use_sim_time" value="true"/>
+  <param name="/robot_description" command="$(find xacro)/xacro.py $(find pr2_description)/robots/pr2.urdf.xacro"/>
+  <node name="rosbag_play"
+        pkg="rosbag" type="play"
+        args="$(env HOME)/data/rosbag/mirror_recognition/20190129_111804.bag --clock --loop"/>
+
+  <group if="$(arg launch_manager)">
+    <node name="$(arg manager)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen" respawn="true"/>
+  </group>
+
+  <group ns="kinect_head_remote">
+    <!-- Relay -->
+    <node name="relay_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"
+          output="screen" respawn="true"/>
+    <!-- Republish images -->
+    <node name="republish_rgb"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+      <remap from="out" to="rgb/image_rect_color"/>
+    </node>
+    <node name="republish_depth"
+          pkg="image_transport" type="republish"
+          args="compressedDepth raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
+      <remap from="out" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+    <!-- 3D reconstruction remotely from kinect. Only for visualization. -->
+    <node name="point_cloud_xyzrgb_remote"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyzrgb /$(arg manager)"
+          output="screen" respawn="true">
+      <remap from="rgb/camera_info" to="rgb/camera_info"/>
+      <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
+      <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+  </group>
+
+  <!-- Parameters for wide_stereo -->
+  <group ns="/wide_stereo_both">
+    <rosparam>
+      imager_rate: 30.0
+      max_exposure: 0.0
+    </rosparam>
+  </group>
+
+  <group ns="wide_stereo_remote">
+    <!-- Relay -->
+    <node name="relay_left_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/wide_stereo/left/camera_info /wide_stereo_remote/left/camera_info"
+          output="screen" respawn="true"/>
+    <node name="relay_right_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/wide_stereo/right/camera_info /wide_stereo_remote/right/camera_info"
+          output="screen" respawn="true"/>
+    <!-- Republish images -->
+    <node name="republish_left"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/wide_stereo/left/image_raw"/>
+      <remap from="out" to="left/image_raw"/>
+    </node>
+    <node name="republish_right"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/wide_stereo/right/image_raw"/>
+      <remap from="out" to="right/image_raw"/>
+    </node>
+    <!-- Stereo image proc remotely -->
+    <node name="wide_stereo_proc"
+          pkg="stereo_image_proc" type="stereo_image_proc"
+          output="screen" respawn="true">
+      <rosparam>
+        correlation_window_size: 21
+        min_disparity: -80
+        disparity_range: 128
+        uniqueness_ratio: 3.0
+        speckle_size: 300
+      </rosparam>
+    </node>
+  </group>
+
+  <!-- Change frame_id -->
+  <node name="tf_transform_cloud_wide_stereo"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/TfTransformCloud $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="/wide_stereo_remote/points2"/>
+    <rosparam>
+      target_frame_id: head_mount_kinect_rgb_optical_frame
+    </rosparam>
+  </node>
+
+  <!-- Convert point cloud from wide stereo to depth image -->
+  <node name="depth_image_creator_wide_stereo"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/DepthImageCreator $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="tf_transform_cloud_wide_stereo/output"/>
+    <remap from="~info" to="kinect_head_remote/rgb/camera_info"/>
+    <rosparam>
+      use_approximate: true
+      max_queue_size: 100
+    </rosparam>
+  </node>
+
+  <!-- Depth image fusion from kinect and wide_stereo -->
+  <node name="fuse_depth_images"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/FuseDepthImages $(arg manager)"
+        output="screen" respawn="true">
+    <rosparam>
+      input_topics:
+        - /kinect_head_remote/depth_registered/hw_registered/image_rect
+        - /depth_image_creator_wide_stereo/output
+      approximate_sync: true
+      queue_size: 100
+      averaging: false
+    </rosparam>
+  </node>
+
+  <!-- 3D reconstruction of fused depth -->
+  <node name="point_cloud_xyzrgb_fused"
+        pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/point_cloud_xyzrgb /$(arg manager)"
+        output="screen" respawn="true">
+    <remap from="rgb/camera_info" to="kinect_head_remote/rgb/camera_info"/>
+    <remap from="rgb/image_rect_color" to="kinect_head_remote/rgb/image_rect_color"/>
+    <remap from="depth_registered/image_rect" to="fuse_depth_images/output"/>
+    <remap from="depth_registered/points" to="~output"/>
+    <rosparam>
+      queue_size: 100
+    </rosparam>
+  </node>
+
+  <!-- People detection -->
+  <group if="$(arg people_pose_estimation)">
+    <node name="people_pose_estimation_2d"
+          pkg="jsk_perception" type="people_pose_estimation_2d.py"
+          output="screen" respawn="true">
+      <remap from="~input" to="kinect_head_remote/rgb/image_rect_color"/>
+      <remap from="~input/depth" to="fuse_depth_images/output"/>
+      <remap from="~input/info" to="kinect_head_remote/rgb/camera_info"/>
+      <rosparam subst_value="true">
+        gpu: $(arg gpu)
+        model_file: $(find jsk_perception)/trained_data/pose_estimation_2d_chainermodel.pkl
+        with_depth: true
+        hand:
+          enable: false
+        approximate_sync: true
+        queue_size: 100
+        slop: 3.0
+      </rosparam>
+    </node>
+  </group>
+
+  <!-- Main Process -->
+  <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
+    <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
+    <arg name="INPUT_INFO" value="/kinect_head_remote/rgb/camera_info"/>
+    <arg name="INPUT_DEPTH" value="/kinect_head_remote/depth_registered/hw_registered/image_rect"/>
+    <arg name="INPUT_CLOUD" value="point_cloud_xyzrgb_fused/output"/>
+    <arg name="LAUNCH_MANAGER" value="false"/>
+    <arg name="manager" value="$(arg manager)"/>
+    <arg name="fcn_at_once_concat_at_once" value="true"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190128-004526"/>
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
+
+  <!-- Visualization -->
+  <!-- Visualize input depth image -->
+  <group ns="kinect_head_remote/depth_registered/hw_registered">
+    <node name="image_rect_viz"
+          pkg="image_view" type="image_view"
+          output="screen"
+          respawn="true">
+      <remap from="image" to="image_rect"/>
+      <rosparam>
+        gui: false
+        colormap: 2
+      </rosparam>
+    </node>
+  </group>
+
+  <!-- Visualize output depth image -->
+  <group ns="fcn_mirror_segmentation_depth_estimation/output">
+    <node name="depth_inpainted_viz"
+          pkg="image_view" type="image_view"
+          output="screen"
+          respawn="true">
+      <remap from="image" to="depth_inpainted"/>
+      <rosparam>
+        gui: false
+        colormap: 2
+      </rosparam>
+    </node>
+    <node name="depth_pred_raw_viz"
+          pkg="image_view" type="image_view"
+          output="screen"
+          respawn="true">
+      <remap from="image" to="depth_pred_raw"/>
+      <rosparam>
+        gui: false
+        colormap: 2
+      </rosparam>
+    </node>
+    <node name="depth_pred_labeled_viz"
+          pkg="image_view" type="image_view"
+          output="screen"
+          respawn="true">
+      <remap from="image" to="depth_pred_labeled"/>
+      <rosparam>
+        gui: false
+        colormap: 2
+      </rosparam>
+    </node>
+  </group>
+
+  <group ns="fuse_depth_images">
+    <node name="fuse_depth_images_viz"
+          pkg="image_view" type="image_view"
+          output="screen"
+          respawn="true">
+      <remap from="image" to="output"/>
+      <remap from="~output" to="~"/>
+      <rosparam>
+        gui: false
+        colormap: 2
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="rosconsole_overlay_text"
+        pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      reverse_lines: false
+    </rosparam>
+  </node>
+
+  <!-- RViz -->
+  <group if="$(arg rviz)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find mirror_recognition)/rvizconfig/point_cloud_from_fused_cloud_mirror_flipper_by_pr2_kinect.rviz"/>
+  </group>
+
+</launch>
