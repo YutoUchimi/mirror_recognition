@@ -84,6 +84,8 @@
           output="screen" respawn="true"
           clear_params="true">
       <rosparam>
+        <!-- Somehow these parameters cannot be changed by default or command line. -->
+        <!-- They can only be changed by rqt_reconfigure. -->
         correlation_window_size: 25
         min_disparity: -80
         disparity_range: 128
