@@ -403,7 +403,7 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
 
         # Regression loss
         # XXX: What is proper loss function?
-        coef = [1, 10]
+        coef = [1, 1]
         reg_loss = (coef[0] * depth_loss_regardless_mask +
                     coef[1] * depth_loss_only_mask)
 
