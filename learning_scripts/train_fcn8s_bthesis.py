@@ -122,7 +122,7 @@ def main():
     out = timestamp
     out = osp.join(osp.dirname(here), 'logs', out)
 
-    max_iter_epoch = 200, 'epoch'
+    max_iter_epoch = 100, 'epoch'
     progress_bar_update_interval = 10  # iteration
     print_interval = 100, 'iteration'
     log_interval = 100, 'iteration'
