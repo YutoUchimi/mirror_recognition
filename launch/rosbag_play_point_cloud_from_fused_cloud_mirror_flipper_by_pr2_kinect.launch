@@ -4,11 +4,12 @@
   <arg name="rviz" default="true"/>
   <arg name="launch_manager" default="true"/>
   <arg name="manager" default="mirror_recognition_manager"/>
-  <arg name="people_pose_estimation" default="true"/>
+  <arg name="people_pose_estimation" default="false"/>
+  <arg name="launch_move_base" default="false"/>
 
   <!-- rosbag play -->
   <param name="/use_sim_time" value="true"/>
-  <param name="/robot_description" command="$(find xacro)/xacro.py $(find pr2_description)/robots/pr2.urdf.xacro"/>
+  <param name="/robot_description" command="$(find xacro)/xacro $(find pr2_description)/robots/pr2.urdf.xacro"/>
   <node name="rosbag_play"
         pkg="rosbag" type="play"
         args="$(env HOME)/data/rosbag/mirror_recognition/20190129_111804.bag --clock --loop"/>
@@ -90,10 +91,10 @@
           pkg="stereo_image_proc" type="stereo_image_proc"
           output="screen" respawn="true">
       <rosparam>
-        correlation_window_size: 21
+        correlation_window_size: 25
         min_disparity: -80
         disparity_range: 128
-        uniqueness_ratio: 3.0
+        uniqueness_ratio: 30.0
         speckle_size: 300
       </rosparam>
     </node>
@@ -182,9 +183,18 @@
     <arg name="LAUNCH_MANAGER" value="false"/>
     <arg name="manager" value="$(arg manager)"/>
     <arg name="fcn_at_once_concat_at_once" value="true"/>
-    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190128-004526"/>
+    <arg name="model_dir" value="$(find mirror_recognition)/logs/20190130-145906"/>
     <arg name="gpu" value="$(arg gpu)"/>
   </include>
+
+  <!-- move_base -->
+  <group if="$(arg launch_move_base)">
+    <include file="$(find jsk_pr2_startup)/jsk_pr2_move_base/pr2_2dnav.launch">
+      <arg name="launch_look_forward" value="false"/>
+      <arg name="launch_teleop_joystick" value="false"/>
+      <arg name="launch_navigation" value="true"/>
+    </include>
+  </group>
 
   <!-- Visualization -->
   <!-- Visualize input depth image -->
