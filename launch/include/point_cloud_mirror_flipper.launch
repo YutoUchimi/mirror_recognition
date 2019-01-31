@@ -61,7 +61,7 @@
       min_size: 1000
       angular_threshold: 0.1
       distance_threshold: 0.03
-      max_curvature: 0.01
+      max_curvature: 1.0
       connect_plane_angle_threshold: 0.3
       connect_distance_threshold: 0.05
     </rosparam>
