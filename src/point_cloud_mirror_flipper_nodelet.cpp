@@ -23,6 +23,7 @@ namespace mirror_recognition
     pnh_->param("approximate_sync", approximate_sync_, false);
     pnh_->param("max_queue_size", max_queue_size_, 100);
     pub_ = advertise<sensor_msgs::PointCloud2>(*pnh_, "output", 1);
+    pub_only_flipped_ = advertise<sensor_msgs::PointCloud2>(*pnh_, "output_only_flipped", 1);
     onInitPostProcess();
   }
 
@@ -151,6 +152,10 @@ namespace mirror_recognition
     pcl::toROSMsg(*output_cloud, ros_output);
     ros_output.header = input->header;
     pub_.publish(ros_output);
+    sensor_msgs::PointCloud2 ros_output_only_flipped;
+    pcl::toROSMsg(*flipped_cloud, ros_output_only_flipped);
+    ros_output_only_flipped.header = input->header;
+    pub_only_flipped_.publish(ros_output_only_flipped);
   }
 }  // namespace mirror_recognition
 

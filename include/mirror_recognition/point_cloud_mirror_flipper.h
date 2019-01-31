@@ -51,6 +51,7 @@ protected:
   ////////////////////////////////////////////////
   boost::mutex mutex_;
   ros::Publisher pub_;
+  ros::Publisher pub_only_flipped_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_input_;
   message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_mirror_indices_;
   message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_plane_indices_;
