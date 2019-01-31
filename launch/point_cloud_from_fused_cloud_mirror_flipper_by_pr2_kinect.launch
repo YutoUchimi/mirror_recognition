@@ -4,7 +4,7 @@
   <arg name="rviz" default="true"/>
   <arg name="launch_manager" default="true"/>
   <arg name="manager" default="mirror_recognition_manager"/>
-  <arg name="people_pose_estimation" default="true"/>
+  <arg name="people_pose_estimation" default="false"/>
 
   <group if="$(arg launch_manager)">
     <node name="$(arg manager)"
@@ -178,6 +178,35 @@
     <arg name="model_dir" value="$(find mirror_recognition)/logs/20190130-145906"/>
     <arg name="gpu" value="$(arg gpu)"/>
   </include>
+
+  <!-- Remove small and noisy points from fliiped point cloud -->
+  <node name="euclidean_clustering_flipped"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/EuclideanClustering $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="point_cloud_mirror_flipper/output_only_flipped"/>
+    <rosparam>
+      tolerance: 0.05
+      label_tracking_tolerance: 0.2
+      max_size: 100000
+      min_size: 300
+    </rosparam>
+  </node>
+  <node name="cluster_indices_decomposer_filtered_flipped"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
+        output="screen" respawn="true">
+    <remap from="~input" to="point_cloud_mirror_flipper/output_only_flipped"/>
+    <remap from="~target" to="euclidean_clustering_flipped/output"/>
+    <rosparam>
+      approximate_sync: false
+      queue_size: 100
+      publish_tf: false
+      publish_clouds: false
+      align_boxes: false
+      use_pca: false
+    </rosparam>
+  </node>
 
   <!-- Visualization -->
   <!-- Visualize input depth image -->
