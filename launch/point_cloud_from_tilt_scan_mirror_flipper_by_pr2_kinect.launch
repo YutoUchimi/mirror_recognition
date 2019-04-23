@@ -84,7 +84,7 @@
     <remap from="depth_registered/points" to="~output"/>
   </node>
 
-    <!-- Main Process -->
+  <!-- Main Process -->
   <include file="$(find mirror_recognition)/launch/include/point_cloud_mirror_flipper.launch">
     <arg name="INPUT_IMAGE" value="/kinect_head_remote/rgb/image_rect_color"/>
     <arg name="INPUT_INFO" value="/kinect_head_remote/rgb/camera_info"/>
