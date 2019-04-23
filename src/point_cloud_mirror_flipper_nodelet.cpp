@@ -5,14 +5,14 @@
 
 #include "mirror_recognition/point_cloud_mirror_flipper.h"
 
+#include <vector>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <jsk_recognition_utils/pcl_ros_util.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/extract_indices.h>
 #include <pluginlib/class_list_macros.h>
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <vector>
 
 
 namespace mirror_recognition
