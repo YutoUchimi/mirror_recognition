@@ -26,6 +26,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: KinectRGB
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -521,7 +523,8 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: false
-    - Background Alpha: 0.699999988
+    - Align Bottom: true
+      Background Alpha: 0.699999988
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/OverlayText
       Enabled: true
@@ -774,7 +777,7 @@ Visualization Manager:
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.00999999978
-      Style: Flat Squares
+      Style: Points
       Topic: /point_cloud_mirror_flipper/output
       Unreliable: false
       Use Fixed Frame: true
@@ -805,25 +808,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.08267021
+      Distance: 0.740193546
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.595937431
-        Y: -0.0192043874
-        Z: 0.998342991
+        X: 0.645113826
+        Y: -0.00788667239
+        Z: 0.890464008
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: -0.0802038386
+      Pitch: 0.589795768
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.42177868
+      Yaw: 2.25677681
     Saved: ~
 Window Geometry:
   Displays:

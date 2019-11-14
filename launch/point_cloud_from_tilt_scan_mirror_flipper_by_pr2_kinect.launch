@@ -43,7 +43,7 @@
     <remap from="assemble_scans2" to="assemble_tilt_scan"/>
     <rosparam>
       fixed_frame: base_link
-      max_scans: 400
+      max_scans: 400  <!-- rolling buffer: 40[Hz] * 10[sec] -->
     </rosparam>
   </node>
 
@@ -55,7 +55,7 @@
     <remap from="~assemble_scans2" to="assemble_tilt_scan"/>
     <rosparam>
       rate: 40
-      duration: 2.0
+      duration: 5.0
     </rosparam>
   </node>
 
