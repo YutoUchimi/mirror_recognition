@@ -1,6 +1,7 @@
 <launch>
 
-  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/annotating/20190130/before_split" />
+  <!-- <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/annotating/20190130/before_split" /> -->
+  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/multi_view_mirror_3d_annotated_dataset/20190130/before_split" />
   <arg name="CAMERA_FRAME" value="head_mount_kinect_rgb_optical_frame"/>
   <arg name="gui" default="true" />
 
