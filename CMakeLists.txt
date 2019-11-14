@@ -30,6 +30,11 @@ endif()
 
 find_package(PCL REQUIRED COMPONENTS filters)
 
+add_custom_target(
+  ${PROJECT_NAME}_install_trained_model
+  ALL
+  COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_trained_model.py)
+
 generate_dynamic_reconfigure_options(
   cfg/PublishRawDataset.cfg
 )
