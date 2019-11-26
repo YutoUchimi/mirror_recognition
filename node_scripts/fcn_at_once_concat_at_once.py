@@ -47,7 +47,7 @@ class FCNAtOnceConcatAtOnce(ConnectionBasedTransport):
         expected_file_set = set([
             'model.txt',
             'n_class.txt',
-            'max_miou.npz',
+            # 'max_miou.npz',
             'max_depth_acc.npz',
         ])
         actual_file_set = set(os.listdir(osp.expanduser(self.model_dir)))

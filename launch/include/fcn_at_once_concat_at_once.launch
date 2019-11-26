@@ -1,7 +1,7 @@
 <launch>
-  <arg name="INPUT_IMAGE"/>
-  <arg name="INPUT_DEPTH"/>
-  <arg name="model_dir"/>
+  <arg name="INPUT_IMAGE" default="/kinect_head/rgb/image_rect_color"/>
+  <arg name="INPUT_DEPTH" default="/kinect_head/depth_registered/hw_registered/image_rect"/>
+  <arg name="model_dir" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20190130"/>
   <arg name="gpu" default="-1"/>
 
   <node name="fcn_mirror_segmentation_depth_estimation"
