@@ -23,22 +23,25 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
     class_names.setflags(write=0)
 
     _files = set([
-        'base_offset_x.txt',
-        'base_offset_y.txt',
+        # 'base_offset_x.txt',
+        # 'base_offset_y.txt',
         'depth.npz',
         'depth_gt.npz',
-        'head_offset_p.txt',
-        'head_offset_y.txt',
+        # 'head_offset_p.txt',
+        # 'head_offset_y.txt',
         'image.png',
         'label.png',
-        'scene_id.txt',
+        # 'scene_id.txt',
         'tf_base_to_camera.yaml',
         'tf_map_to_camera.yaml'
     ])
 
+    # root_dir = osp.expanduser(
+    #     '~/data/mvtk/mirror_recognition/'
+    #     'multi_view_mirror_3d_annotated_dataset')
     root_dir = osp.expanduser(
-        '~/data/mvtk/mirror_recognition/'
-        'multi_view_mirror_3d_annotated_dataset')
+        '~/data/datasets/mirror_recognition/'
+        'eng2_elevator_mirror')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
     min_value = 0.5
     max_value = 5.0
@@ -62,8 +65,8 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
                     'Expected: {}\nActual: {}'
                     .format(files_dir, self._files, files))
                 self._files_dirs.append(files_dir)
-                with open(osp.join(files_dir, 'scene_id.txt'), 'r') as f:
-                    self._scenes.append(str(f.readline()).rstrip())
+                # with open(osp.join(files_dir, 'scene_id.txt'), 'r') as f:
+                #     self._scenes.append(str(f.readline()).rstrip())
 
     def __len__(self):
         return len(self._files_dirs)

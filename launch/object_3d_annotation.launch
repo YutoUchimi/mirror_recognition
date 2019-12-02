@@ -1,15 +1,18 @@
 <launch>
 
   <!-- <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/annotating/20190130/before_split" /> -->
-  <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/multi_view_mirror_3d_annotated_dataset/20190130/before_split" />
+  <!-- <arg name="DATA_DIR" default="$(env HOME)/data/mvtk/mirror_recognition/multi_view_mirror_3d_annotated_dataset/20190130/before_split" /> -->
+  <arg name="DATA_DIR" default="$(env HOME)/data/datasets/mirror_recognition/annotated_3d/20191202/before_split" />
   <arg name="CAMERA_FRAME" value="head_mount_kinect_rgb_optical_frame"/>
   <arg name="gui" default="true" />
 
   <!-- Change these if you want to use different mesh model -->
   <!-- <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26"/> -->
   <!-- <arg name="OBJECT_NAME" value="human_size_mirror"/> -->
-  <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26_1"/>
-  <arg name="OBJECT_NAME" value="mirror_no_frame"/>
+  <!-- <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26_1"/> -->
+  <!-- <arg name="OBJECT_NAME" value="mirror_no_frame"/> -->
+  <arg name="OBJECT_ID" value="e38a7ba01d45953ccb7547c95fbdff26_2"/>
+  <arg name="OBJECT_NAME" value="mirror_in_eng2_elevator"/>
 
 
   <!-- Publish raw dataset -->

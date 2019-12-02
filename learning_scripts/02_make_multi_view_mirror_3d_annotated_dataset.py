@@ -136,16 +136,16 @@ def main(src_dir, dst_dir):
             cam_info_file,
             tf_camera_to_obj_file,
             mesh_id_file,
-            scene_id_file,
-            base_offset_x_file,
-            base_offset_y_file,
-            head_offset_p_file,
-            head_offset_y_file,
+            # scene_id_file,
+            # base_offset_x_file,
+            # base_offset_y_file,
+            # head_offset_p_file,
+            # head_offset_y_file,
             tf_base_to_cam_file,
             tf_map_to_cam_file
         ]
         for f in required_files:
-            if not osp.exists(image_file):
+            if not osp.exists(f):
                 print('{} does not exist.'.format(f))
                 exit(1)
 
@@ -157,11 +157,11 @@ def main(src_dir, dst_dir):
         # Main process
         save_image(image_file, out_dir)
         copy_raw_depth(depth_file, out_dir)
-        copy_scene_id(scene_id_file, out_dir)
-        copy_base_offset_x(base_offset_x_file, out_dir)
-        copy_base_offset_y(base_offset_y_file, out_dir)
-        copy_head_offset_p(head_offset_p_file, out_dir)
-        copy_head_offset_y(head_offset_y_file, out_dir)
+        # copy_scene_id(scene_id_file, out_dir)
+        # copy_base_offset_x(base_offset_x_file, out_dir)
+        # copy_base_offset_y(base_offset_y_file, out_dir)
+        # copy_head_offset_p(head_offset_p_file, out_dir)
+        # copy_head_offset_y(head_offset_y_file, out_dir)
         copy_tf_base_to_cam(tf_base_to_cam_file, out_dir)
         copy_tf_map_to_cam(tf_map_to_cam_file, out_dir)
         save_generated_depth_gt_label_gt(
