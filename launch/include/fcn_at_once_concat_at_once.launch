@@ -1,7 +1,8 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/kinect_head/rgb/image_rect_color"/>
   <arg name="INPUT_DEPTH" default="/kinect_head/depth_registered/hw_registered/image_rect"/>
-  <arg name="model_dir" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20190130"/>
+  <!-- <arg name="model_dir" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20190130"/> -->
+  <arg name="model_dir" default="$(env HOME)/tmp/20191202-181749"/>
   <arg name="gpu" default="-1"/>
 
   <node name="fcn_mirror_segmentation_depth_estimation"
@@ -28,7 +29,7 @@
     <remap from="~input/label" to="fcn_mirror_segmentation_depth_estimation/output/label"/>
     <remap from="~label_names" to="fcn_mirror_segmentation_depth_estimation/mirror_names"/>
     <rosparam>
-      queue_size: 1000
+      queue_size: 300
     </rosparam>
   </node>
 
