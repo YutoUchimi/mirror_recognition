@@ -3,7 +3,7 @@
   <arg name="INPUT_DEPTH" default="/kinect_head/depth_registered/hw_registered/image_rect"/>
   <!-- <arg name="model_dir" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20190130"/> -->
   <arg name="model_dir" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20191205"/>
-  <arg name="gpu" default="-1"/>
+  <arg name="gpu" default="0"/>
 
   <node name="fcn_mirror_segmentation_depth_estimation"
         pkg="mirror_recognition" type="fcn_at_once_concat_at_once.py"
