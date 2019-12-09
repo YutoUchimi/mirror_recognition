@@ -8,9 +8,9 @@ def main():
 
     download_data(
         pkg_name=PKG,
-        path='trained_model/fcn_mirror_depth_prediction_20191205.tar.gz',
-        url='https://drive.google.com/uc?id=19IgX3qOzU_ZAS5sdHzsp8y34JfxzR50-',
-        md5='57d96f65dcd58a375ff1bf3308d3ddb9',
+        path='trained_model/fcn_mirror_depth_prediction_20191206.tar.gz',
+        url='https://drive.google.com/uc?id=1x_axX_r6Pwfl2NSqCB7bTenkfbDzGvFj',
+        md5='2f4fd835fd11240fcca65a9d4711e96f',
         extract=True
     )
 
