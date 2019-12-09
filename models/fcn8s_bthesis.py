@@ -443,7 +443,15 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
             if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
                 acc = 1.0
             elif np.sum(t_lbl_fg) == 0:
+                # FIXME: Currently compute from background class
                 acc = np.nan
+                # true_depth_cp = np.copy(true_depth)
+                # true_depth_cp[np.isnan(true_depth_cp)] = np.inf
+                # numer = np.sum(
+                #     np.logical_and(
+                #         ~p_lbl_fg,
+                #         np.abs(true_depth_cp - depth_pred) < thresh))
+                # denom = np.sum(~t_lbl_fg, ~p_lbl_fg)
             else:
                 # {TP and (|error| < thresh)} / (TP or FP or FN)
                 true_depth_cp = np.copy(true_depth)
