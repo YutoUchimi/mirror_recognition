@@ -116,6 +116,8 @@ def main():
         help='Number of getting examples at the same time')
     parser.add_argument(
         '-b', '--batch_size', type=int, required=True, help='Batch size')
+    parser.add_argument(
+        '-e', '--epoch', type=int, required=True, help='Training epoch')
     args = parser.parse_args()
 
     gpu = args.gpu
@@ -127,7 +129,7 @@ def main():
     out = timestamp
     out = osp.join(osp.dirname(here), 'logs', out)
 
-    max_iter_epoch = 200, 'epoch'
+    max_iter_epoch = args.epoch, 'epoch'
     progress_bar_update_interval = 10  # iteration
     print_interval = 100, 'iteration'
     log_interval = 100, 'iteration'
