@@ -43,17 +43,18 @@ def load_off(filename):
 def transform_to_matrix(tf_file):
     f = open(tf_file, "r")
     transform = yaml.load(f)
-    tx = transform['transform']['translation']['x']
-    ty = transform['transform']['translation']['y']
-    tz = transform['transform']['translation']['z']
-    qx = transform['transform']['rotation']['x']
-    qy = transform['transform']['rotation']['y']
-    qz = transform['transform']['rotation']['z']
-    qw = transform['transform']['rotation']['w']
-    R_t = tf.transformations.translation_matrix((tx, ty, tz))
-    R_t = np.asarray(R_t)
-    R_r = tf.transformations.quaternion_matrix((qx, qy, qz, qw))
-    R = np.hstack((R_r[:, :3], np.reshape(R_t[:, 3], (4, 1))))
+    # tx = transform['transform']['translation']['x']
+    # ty = transform['transform']['translation']['y']
+    # tz = transform['transform']['translation']['z']
+    # qx = transform['transform']['rotation']['x']
+    # qy = transform['transform']['rotation']['y']
+    # qz = transform['transform']['rotation']['z']
+    # qw = transform['transform']['rotation']['w']
+    # R_t = tf.transformations.translation_matrix((tx, ty, tz))
+    # R_t = np.asarray(R_t)
+    # R_r = tf.transformations.quaternion_matrix((qx, qy, qz, qw))
+    # R = np.hstack((R_r[:, :3], np.reshape(R_t[:, 3], (4, 1))))
+    R = np.asarray(transform)
     return R
 
 

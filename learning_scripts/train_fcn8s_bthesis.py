@@ -21,6 +21,7 @@ import numpy as np
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
 from datasets import MultiViewMirror3DAnnotatedDataset  # NOQA
+from datasets import TransparentObjects3DAnnotatedDataset  # NOQA
 from models import FCN8sAtOnceConcatAtOnce  # NOQA
 from models import FCN8sAtOnceInputRGBD  # NOQA
 
@@ -139,6 +140,11 @@ def main():
     # 1. dataset
 
     if args.dataset == 'MultiViewMirror3DAnnotatedDataset':
+        dataset_train = MultiViewMirror3DAnnotatedDataset(
+            split='train', aug=True, num_view=num_view)
+        dataset_valid = MultiViewMirror3DAnnotatedDataset(
+            split='test', aug=False, num_view=num_view)
+    elif args.dataset == 'TransparentObjects3DAnnotatedDataset':
         dataset_train = MultiViewMirror3DAnnotatedDataset(
             split='train', aug=True, num_view=num_view)
         dataset_valid = MultiViewMirror3DAnnotatedDataset(

@@ -196,7 +196,8 @@ class FCNBthesis(object):
             if np.sum(t_lbl_fg) == 0 and np.sum(p_lbl_fg) == 0:
                 acc = 1.0
             elif np.sum(t_lbl_fg) == 0:
-                acc = np.nan
+                # acc = np.nan
+                acc = 0.0
             else:
                 # {TP and (|error| < thresh)} / (TP or FP or FN)
                 depth_gt_cp = np.copy(depth_gt)
@@ -319,10 +320,14 @@ class FCNBthesis(object):
             plot_img = np.asarray(PIL.Image.open(buf))
             buf.close()
 
+            # viz = mvtk.image.tile(
+            #     [image_rgb, pred_label_viz, label_gt_viz, plot_img,
+            #      depth_rgb, pred_depth_viz, depth_gt_viz, inpainted_depth_viz],
+            #     shape=(2, 4))
             viz = mvtk.image.tile(
-                [image_rgb, pred_label_viz, label_gt_viz, plot_img,
-                 depth_rgb, pred_depth_viz, depth_gt_viz, inpainted_depth_viz],
-                shape=(2, 4))
+                [image_rgb, pred_label_viz, depth_gt_viz,
+                 depth_rgb, pred_depth_viz, inpainted_depth_viz],
+                shape=(2, 3))
             mvtk.image.resize(viz, size=300 * 300)
             print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
 
