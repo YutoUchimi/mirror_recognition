@@ -145,9 +145,9 @@ def main():
         dataset_valid = MultiViewMirror3DAnnotatedDataset(
             split='test', aug=False, num_view=num_view)
     elif args.dataset == 'TransparentObjects3DAnnotatedDataset':
-        dataset_train = MultiViewMirror3DAnnotatedDataset(
+        dataset_train = TransparentObjects3DAnnotatedDataset(
             split='train', aug=True, num_view=num_view)
-        dataset_valid = MultiViewMirror3DAnnotatedDataset(
+        dataset_valid = TransparentObjects3DAnnotatedDataset(
             split='test', aug=False, num_view=num_view)
     else:
         print('Invalid dataset class.')
