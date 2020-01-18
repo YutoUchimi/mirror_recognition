@@ -24,6 +24,7 @@ import PIL.Image
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
 from datasets import MultiViewMirror3DAnnotatedDataset  # NOQA
+from datasets import TransparentObjects3DAnnotatedDataset  # NOQA
 from models import FCN8sAtOnceConcatAtOnce  # NOQA
 from models import FCN8sAtOnceInputRGBD  # NOQA
 
@@ -111,6 +112,9 @@ class FCNBthesis(object):
             dataset_name = f.readline().rstrip()
         if dataset_name == 'MultiViewMirror3DAnnotatedDataset':
             self.dataset = MultiViewMirror3DAnnotatedDataset(
+                split=self.split, aug=False, num_view=self.num_view)
+        elif dataset_name == 'TransparentObjects3DAnnotatedDataset':
+            self.dataset = TransparentObjects3DAnnotatedDataset(
                 split=self.split, aug=False, num_view=self.num_view)
         self.data_len = len(self.dataset)
         print('dataset class name: %s' % self.dataset.__class__.__name__)
