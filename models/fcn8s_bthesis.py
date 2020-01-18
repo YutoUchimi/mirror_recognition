@@ -490,9 +490,9 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
 
     def __call__(self, rgb, depth_viz, true_mask=None, true_depth=None):
         score_label, rgb_pool5 = self.predict_mask(rgb, return_pool5=True)
+        self.score_label = score_label
         depth_pred = self.predict_depth(
             rgb, score_label, depth_viz, rgb_pool5, true_mask)
-        self.score_label = score_label
         self.depth_pred = depth_pred
 
         if true_mask is None or true_depth is None:
