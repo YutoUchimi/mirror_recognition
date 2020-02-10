@@ -444,7 +444,8 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
                 acc = 1.0
             elif np.sum(t_lbl_fg) == 0:
                 # FIXME: Currently compute from background class
-                acc = np.nan
+                # acc = np.nan
+                acc = 0.0
                 # true_depth_cp = np.copy(true_depth)
                 # true_depth_cp[np.isnan(true_depth_cp)] = np.inf
                 # numer = np.sum(
