@@ -193,6 +193,7 @@ class FCNBthesis(object):
 
     def get_depth_accs(self, label_gt, depth_gt, pred_label, pred_depth):
         depth_accs = []
+        depth_all_accs = []
         for thresh in [0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20,
                        0.25, 0.30, 0.40, 0.50, 0.70, 1.00]:
             t_lbl_fg = label_gt > 0
@@ -214,9 +215,19 @@ class FCNBthesis(object):
                 denom = np.sum(np.logical_or(t_lbl_fg, p_lbl_fg))
                 acc = 1.0 * numer / denom
             depth_accs.append([thresh, acc])
-        depth_accs = np.array(depth_accs)
 
-        return depth_accs
+            depth_gt_cp = np.copy(depth_gt)
+            numer = np.sum(np.abs(
+                depth_gt_cp[~np.isnan(depth_gt_cp)] -
+                pred_depth[~np.isnan(depth_gt_cp)]) < thresh)
+            denom = np.sum(~np.isnan(depth_gt_cp))
+            all_acc = 1.0 * numer / denom
+            depth_all_accs.append([thresh, all_acc])
+
+        depth_accs = np.array(depth_accs)
+        depth_all_accs = np.array(depth_all_accs)
+
+        return depth_accs, depth_all_accs
 
     def summarizing_process(self):
         print('========================================================')
@@ -228,6 +239,11 @@ class FCNBthesis(object):
         sum_depth_acc_010 = 0.0
         sum_depth_acc_030 = 0.0
         sum_depth_acc_100 = 0.0
+        sum_depth_all_acc_001 = 0.0
+        sum_depth_all_acc_003 = 0.0
+        sum_depth_all_acc_010 = 0.0
+        sum_depth_all_acc_030 = 0.0
+        sum_depth_all_acc_100 = 0.0
         id = 0
         for id in range(self.data_len):
             examples = self.dataset[id]
@@ -238,7 +254,7 @@ class FCNBthesis(object):
             pred_label = pred_label.astype(np.int32)
 
             miou = self.get_miou(label_gt, pred_label)
-            depth_accs = self.get_depth_accs(
+            depth_accs, depth_all_accs = self.get_depth_accs(
                 label_gt, depth_gt, pred_label, pred_depth)
 
             sum_miou += miou
@@ -247,6 +263,11 @@ class FCNBthesis(object):
             sum_depth_acc_010 += depth_accs[6, 1]
             sum_depth_acc_030 += depth_accs[10, 1]
             sum_depth_acc_100 += depth_accs[14, 1]
+            sum_depth_all_acc_001 += depth_all_accs[0, 1]
+            sum_depth_all_acc_003 += depth_all_accs[2, 1]
+            sum_depth_all_acc_010 += depth_all_accs[6, 1]
+            sum_depth_all_acc_030 += depth_all_accs[10, 1]
+            sum_depth_all_acc_100 += depth_all_accs[14, 1]
 
         ave_miou = sum_miou / self.data_len
         ave_depth_acc_001 = sum_depth_acc_001 / self.data_len
@@ -254,6 +275,11 @@ class FCNBthesis(object):
         ave_depth_acc_010 = sum_depth_acc_010 / self.data_len
         ave_depth_acc_030 = sum_depth_acc_030 / self.data_len
         ave_depth_acc_100 = sum_depth_acc_100 / self.data_len
+        ave_depth_all_acc_001 = sum_depth_all_acc_001 / self.data_len
+        ave_depth_all_acc_003 = sum_depth_all_acc_003 / self.data_len
+        ave_depth_all_acc_010 = sum_depth_all_acc_010 / self.data_len
+        ave_depth_all_acc_030 = sum_depth_all_acc_030 / self.data_len
+        ave_depth_all_acc_100 = sum_depth_all_acc_100 / self.data_len
 
         print('mean IU: {}'.format(ave_miou))
         print('depth_acc<0.01: {}'.format(ave_depth_acc_001))
@@ -261,6 +287,11 @@ class FCNBthesis(object):
         print('depth_acc<0.10: {}'.format(ave_depth_acc_010))
         print('depth_acc<0.30: {}'.format(ave_depth_acc_030))
         print('depth_acc<1.00: {}'.format(ave_depth_acc_100))
+        print('depth_all_acc<0.01: {}'.format(ave_depth_all_acc_001))
+        print('depth_all_acc<0.03: {}'.format(ave_depth_all_acc_003))
+        print('depth_all_acc<0.10: {}'.format(ave_depth_all_acc_010))
+        print('depth_all_acc<0.30: {}'.format(ave_depth_all_acc_030))
+        print('depth_all_acc<1.00: {}'.format(ave_depth_all_acc_100))
         print('========================================================\n')
 
     def process(self):
