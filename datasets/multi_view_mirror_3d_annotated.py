@@ -36,12 +36,12 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         'tf_map_to_camera.yaml'
     ])
 
-    # root_dir = osp.expanduser(
-    #     '~/data/mvtk/mirror_recognition/'
-    #     'multi_view_mirror_3d_annotated_dataset')
     root_dir = osp.expanduser(
-        '~/data/datasets/mirror_recognition/'
-        'eng2_elevator_mirror')
+        '~/data/mvtk/mirror_recognition/'
+        'multi_view_mirror_3d_annotated_dataset')
+    # root_dir = osp.expanduser(
+    #     '~/data/datasets/mirror_recognition/'
+    #     'eng2_elevator_mirror')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
     min_value = 0.5
     max_value = 5.0
