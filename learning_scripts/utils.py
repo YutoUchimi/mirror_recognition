@@ -43,17 +43,18 @@ def load_off(filename):
 def transform_to_matrix(tf_file):
     f = open(tf_file, "r")
     transform = yaml.load(f)
-    tx = transform['transform']['translation']['x']
-    ty = transform['transform']['translation']['y']
-    tz = transform['transform']['translation']['z']
-    qx = transform['transform']['rotation']['x']
-    qy = transform['transform']['rotation']['y']
-    qz = transform['transform']['rotation']['z']
-    qw = transform['transform']['rotation']['w']
-    R_t = tf.transformations.translation_matrix((tx, ty, tz))
-    R_t = np.asarray(R_t)
-    R_r = tf.transformations.quaternion_matrix((qx, qy, qz, qw))
-    R = np.hstack((R_r[:, :3], np.reshape(R_t[:, 3], (4, 1))))
+    # tx = transform['transform']['translation']['x']
+    # ty = transform['transform']['translation']['y']
+    # tz = transform['transform']['translation']['z']
+    # qx = transform['transform']['rotation']['x']
+    # qy = transform['transform']['rotation']['y']
+    # qz = transform['transform']['rotation']['z']
+    # qw = transform['transform']['rotation']['w']
+    # R_t = tf.transformations.translation_matrix((tx, ty, tz))
+    # R_t = np.asarray(R_t)
+    # R_r = tf.transformations.quaternion_matrix((qx, qy, qz, qw))
+    # R = np.hstack((R_r[:, :3], np.reshape(R_t[:, 3], (4, 1))))
+    R = np.asarray(transform)
     return R
 
 
@@ -81,6 +82,15 @@ def generate_depth(vertices, faces, height, width, R, K):
     depth_obj.fill(np.inf)
     mask_obj = np.zeros((height, width), dtype=bool)
     for face in tqdm.tqdm(faces[indices]):
+        tri0_z = vertices_camframe[face[0]][2]
+        tri1_z = vertices_camframe[face[1]][2]
+        tri2_z = vertices_camframe[face[2]][2]
+        if tri0_z < 0 or tri1_z < 0 or tri2_z < 0:
+            continue
+        tri0_xy = vertices_2d[face[0]]
+        tri1_xy = vertices_2d[face[1]]
+        tri2_xy = vertices_2d[face[2]]
+        #
         xy = vertices_2d[face].ravel().tolist()
         mask_pil = PIL.Image.new('L', (width, height), 0)
         PIL.ImageDraw.Draw(mask_pil).polygon(xy=xy, outline=1, fill=1)
@@ -98,13 +108,6 @@ def generate_depth(vertices, faces, height, width, R, K):
         #
         ray0_z = np.ones((n_rays, 1), dtype=np.float64) * 10  # max depth: 10m
         ray0_xyz = np.hstack((ray1_xy, ray0_z))
-        #
-        tri0_xy = vertices_2d[face[0]]
-        tri1_xy = vertices_2d[face[1]]
-        tri2_xy = vertices_2d[face[2]]
-        tri0_z = vertices_camframe[face[0]][2]
-        tri1_z = vertices_camframe[face[1]][2]
-        tri2_z = vertices_camframe[face[2]][2]
         tri0_xyz = np.hstack((tri0_xy, tri0_z))
         tri1_xyz = np.hstack((tri1_xy, tri1_z))
         tri2_xyz = np.hstack((tri2_xy, tri2_z))

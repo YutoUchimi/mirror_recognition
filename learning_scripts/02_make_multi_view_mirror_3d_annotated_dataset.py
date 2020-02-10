@@ -115,37 +115,43 @@ def main(src_dir, dst_dir):
     length = len(os.listdir(src_dir))
     for i, stamp_dir in enumerate(sorted(os.listdir(src_dir))):
         # Check if required files exist.
-        image_file = osp.join(src_dir, stamp_dir, 'image.jpg')
-        depth_file = osp.join(src_dir, stamp_dir, 'depth.npz')
+        # image_file = osp.join(src_dir, stamp_dir, 'image.jpg')
+        # depth_file = osp.join(src_dir, stamp_dir, 'depth.npz')
+        # cam_info_file = osp.join(src_dir, stamp_dir, 'camera_info.yaml')
+        # tf_camera_to_obj_file = osp.join(
+        #     src_dir, stamp_dir, 'tf_camera_to_obj.yaml')
+        # mesh_id_file = osp.join(src_dir, stamp_dir, 'mesh_id.yaml')
+        image_file = osp.join(src_dir, stamp_dir, 'rgb_obj_y.jpg')
+        depth_file = osp.join(src_dir, stamp_dir, 'depth_obj_y.npz')
         cam_info_file = osp.join(src_dir, stamp_dir, 'camera_info.yaml')
         tf_camera_to_obj_file = osp.join(
             src_dir, stamp_dir, 'tf_camera_to_obj.yaml')
         mesh_id_file = osp.join(src_dir, stamp_dir, 'mesh_id.yaml')
-        scene_id_file = osp.join(src_dir, stamp_dir, 'scene_id.txt')
-        base_offset_x_file = osp.join(src_dir, stamp_dir, 'base_offset_x.txt')
-        base_offset_y_file = osp.join(src_dir, stamp_dir, 'base_offset_y.txt')
-        head_offset_p_file = osp.join(src_dir, stamp_dir, 'head_offset_p.txt')
-        head_offset_y_file = osp.join(src_dir, stamp_dir, 'head_offset_y.txt')
-        tf_base_to_cam_file = osp.join(
-            src_dir, stamp_dir, 'tf_base_to_camera.yaml')
-        tf_map_to_cam_file = osp.join(
-            src_dir, stamp_dir, 'tf_map_to_camera.yaml')
+        # scene_id_file = osp.join(src_dir, stamp_dir, 'scene_id.txt')
+        # base_offset_x_file = osp.join(src_dir, stamp_dir, 'base_offset_x.txt')
+        # base_offset_y_file = osp.join(src_dir, stamp_dir, 'base_offset_y.txt')
+        # head_offset_p_file = osp.join(src_dir, stamp_dir, 'head_offset_p.txt')
+        # head_offset_y_file = osp.join(src_dir, stamp_dir, 'head_offset_y.txt')
+        # tf_base_to_cam_file = osp.join(
+        #     src_dir, stamp_dir, 'tf_base_to_camera.yaml')
+        # tf_map_to_cam_file = osp.join(
+        #     src_dir, stamp_dir, 'tf_map_to_camera.yaml')
         required_files = [
             image_file,
             depth_file,
             cam_info_file,
             tf_camera_to_obj_file,
             mesh_id_file,
-            scene_id_file,
-            base_offset_x_file,
-            base_offset_y_file,
-            head_offset_p_file,
-            head_offset_y_file,
-            tf_base_to_cam_file,
-            tf_map_to_cam_file
+            # scene_id_file,
+            # base_offset_x_file,
+            # base_offset_y_file,
+            # head_offset_p_file,
+            # head_offset_y_file,
+            # tf_base_to_cam_file,
+            # tf_map_to_cam_file
         ]
         for f in required_files:
-            if not osp.exists(image_file):
+            if not osp.exists(f):
                 print('{} does not exist.'.format(f))
                 exit(1)
 
@@ -157,13 +163,13 @@ def main(src_dir, dst_dir):
         # Main process
         save_image(image_file, out_dir)
         copy_raw_depth(depth_file, out_dir)
-        copy_scene_id(scene_id_file, out_dir)
-        copy_base_offset_x(base_offset_x_file, out_dir)
-        copy_base_offset_y(base_offset_y_file, out_dir)
-        copy_head_offset_p(head_offset_p_file, out_dir)
-        copy_head_offset_y(head_offset_y_file, out_dir)
-        copy_tf_base_to_cam(tf_base_to_cam_file, out_dir)
-        copy_tf_map_to_cam(tf_map_to_cam_file, out_dir)
+        # copy_scene_id(scene_id_file, out_dir)
+        # copy_base_offset_x(base_offset_x_file, out_dir)
+        # copy_base_offset_y(base_offset_y_file, out_dir)
+        # copy_head_offset_p(head_offset_p_file, out_dir)
+        # copy_head_offset_y(head_offset_y_file, out_dir)
+        # copy_tf_base_to_cam(tf_base_to_cam_file, out_dir)
+        # copy_tf_map_to_cam(tf_map_to_cam_file, out_dir)
         save_generated_depth_gt_label_gt(
             depth_file, cam_info_file, tf_camera_to_obj_file, mesh_id_file,
             out_dir)

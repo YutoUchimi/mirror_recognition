@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="save_dir"
-       value="~/data/mvtk/mirror_recognition/raw_data/20181218/before_split"/>
+       value="~/data/datasets/mirror_recognition/raw_data/20191205/before_split"/>
   <arg name="min_image_value" default="0.5"/>
   <arg name="max_image_value" default="5.0"/>
 
@@ -15,20 +15,53 @@
     <rosparam subst_value="true">
       save_dir: $(arg save_dir)
       topics:
-      - name: /kinect_head/rgb/camera_info
-        msg_class: sensor_msgs/CameraInfo
-        fname: camera_info.yaml
-        savetype: YAML
-      - name: /kinect_head/rgb/image_rect_color
-        msg_class: sensor_msgs/Image
-        fname: image.jpg
-        savetype: ColorImage
-      - name: /kinect_head/depth_registered/hw_registered/image_rect
-        msg_class: sensor_msgs/Image
-        fname: depth.npz
-        savetype: DepthImage
+        - name: /kinect_head/rgb/camera_info
+          msg_class: sensor_msgs/CameraInfo
+          fname: camera_info.yaml
+          savetype: YAML
+        - name: /kinect_head/rgb/image_rect_color
+          msg_class: sensor_msgs/Image
+          fname: image.jpg
+          savetype: ColorImage
+        - name: /kinect_head/depth_registered/hw_registered/image_rect
+          msg_class: sensor_msgs/Image
+          fname: depth.npz
+          savetype: DepthImage
+        - name: /tf_to_transform_map_to_camera/output
+          msg_class: geometry_msgs/TransformStamped
+          fname: tf_map_to_camera.yaml
+          savetype: YAML
+        - name: /tf_to_transform_base_to_camera/output
+          msg_class: geometry_msgs/TransformStamped
+          fname: tf_base_to_camera.yaml
+          savetype: YAML
+      message_filters: true
       approximate_sync: true
       slop: 1.0
+    </rosparam>
+  </node>
+
+  <node name="tf_to_transform_map_to_camera"
+        pkg="jsk_topic_tools" type="tf_to_transform.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      parent_frame_id: map
+      child_frame_id: head_mount_kinect_rgb_optical_frame
+      duration: 1
+      rate: 30
+    </rosparam>
+  </node>
+
+  <node name="tf_to_transform_base_to_camera"
+        pkg="jsk_topic_tools" type="tf_to_transform.py"
+        output="screen"
+        respawn="true">
+    <rosparam>
+      parent_frame_id: base_link
+      child_frame_id: head_mount_kinect_rgb_optical_frame
+      duration: 1
+      rate: 30
     </rosparam>
   </node>
 
@@ -65,6 +98,8 @@
         output="screen"
         respawn="true">
     <rosparam>
+      nodes:
+        - /save_image_by_btn
       reverse_lines: false
     </rosparam>
   </node>

@@ -444,7 +444,8 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
                 acc = 1.0
             elif np.sum(t_lbl_fg) == 0:
                 # FIXME: Currently compute from background class
-                acc = np.nan
+                # acc = np.nan
+                acc = 0.0
                 # true_depth_cp = np.copy(true_depth)
                 # true_depth_cp[np.isnan(true_depth_cp)] = np.inf
                 # numer = np.sum(
@@ -490,9 +491,9 @@ class FCN8sAtOnceInputRGBD(chainer.Chain):
 
     def __call__(self, rgb, depth_viz, true_mask=None, true_depth=None):
         score_label, rgb_pool5 = self.predict_mask(rgb, return_pool5=True)
+        self.score_label = score_label
         depth_pred = self.predict_depth(
             rgb, score_label, depth_viz, rgb_pool5, true_mask)
-        self.score_label = score_label
         self.depth_pred = depth_pred
 
         if true_mask is None or true_depth is None:

@@ -13,44 +13,34 @@ import imgaug.augmenters as iaa
 import mvtk
 
 
-class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
+class TransparentObjectsDataset(chainer.dataset.DatasetMixin):
 
     # TODO(unknown): Get class names from dataset dir.
     class_names = np.array([
         '_background_',
-        'mirror',
+        'transparent',
     ], dtype=np.str)
     class_names.setflags(write=0)
 
     _files = set([
-        # 'base_offset_x.txt',
-        # 'base_offset_y.txt',
-        'depth.npz',
-        'depth_gt.npz',
-        # 'head_offset_p.txt',
-        # 'head_offset_y.txt',
-        'image.png',
-        'label.png',
-        # 'scene_id.txt',
-        'tf_base_to_camera.yaml',
-        'tf_map_to_camera.yaml'
+        'depth_obj_n.npz',
+        'depth_obj_g.npz',
+        # 'rgb_obj_g2.jpg',
+        'mask_obj_g.jpg'
     ])
 
     root_dir = osp.expanduser(
-        '~/data/mvtk/mirror_recognition/'
-        'multi_view_mirror_3d_annotated_dataset')
-    # root_dir = osp.expanduser(
-    #     '~/data/datasets/mirror_recognition/'
-    #     'eng2_elevator_mirror')
+        '~/data/mvtk/transparent_objects/datasets')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
+    # min_value = 0.5
+    # max_value = 5.0
     min_value = 0.5
-    max_value = 5.0
+    max_value = 1.2
 
     def __init__(self, split, aug=False, num_view=1):
         assert split in ['train', 'test']
         self.split = split
         self.aug = aug
-        self.num_view = num_view
 
         self._files_dirs = []
         self._scenes = []
@@ -65,8 +55,6 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
                     'Expected: {}\nActual: {}'
                     .format(files_dir, self._files, files))
                 self._files_dirs.append(files_dir)
-                # with open(osp.join(files_dir, 'scene_id.txt'), 'r') as f:
-                #     self._scenes.append(str(f.readline()).rstrip())
 
     def __len__(self):
         return len(self._files_dirs)
@@ -77,36 +65,23 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         # Append index == i as first example
         examples.append(self._get_example(self._files_dirs[i], i))
 
-        if self.num_view != 1:
-            if self.split == 'train':
-                assert self.num_view >= 2 and self.num_view <= 36
-            else:
-                assert self.num_view >= 2 and self.num_view <= 9
-
-            # Append index != i but chosen from the same scene.
-            # Random sampling? Random permutation?
-            same_scene_indices = [
-                idx for idx, x in enumerate(self._scenes)
-                if x == self._scenes[i]
-            ]
-            same_scene_indices.remove(i)
-            np.random.seed()
-            sampling_scene_indices = np.random.permutation(
-                same_scene_indices)[:self.num_view - 1]
-            for idx in sampling_scene_indices:
-                examples.append(self._get_example(self._files_dirs[idx], idx))
-
-        assert len(examples) == self.num_view
-
         return examples
 
     def _get_example(self, files_dir, idx):
-        image_file = osp.join(files_dir, 'image.png')
+        if osp.exists(osp.join(files_dir, 'rgb_obj_y.jpg')):
+            image_file = osp.join(files_dir, 'rgb_obj_y.jpg')
+        elif osp.exists(osp.join(files_dir, 'rgb_obj_g2.jpg')):
+            image_file = osp.join(files_dir, 'rgb_obj_g2.jpg')
+        else:
+            image_file = osp.join(files_dir, 'rgb_obj_g.jpg')
         image = skimage.io.imread(image_file)
         assert image.dtype == np.uint8
         assert image.ndim == 3
 
-        depth_file = osp.join(files_dir, 'depth.npz')
+        if osp.exists(osp.join(files_dir, 'depth_obj_y.npz')):
+            depth_file = osp.join(files_dir, 'depth_obj_y.npz')
+        else:
+            depth_file = osp.join(files_dir, 'depth_obj_n.npz')
         depth = np.load(depth_file)['arr_0']
         depth[depth == 0] = np.nan
         if depth.dtype == np.uint16:
@@ -118,13 +93,13 @@ class MultiViewMirror3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         assert depth.dtype == np.float32
         assert depth.ndim == 2
 
-        label_file = osp.join(files_dir, 'label.png')
+        label_file = osp.join(files_dir, 'mask_obj_g.jpg')
         with open(label_file, 'r') as f:
             label = np.asarray(PIL.Image.open(f)).astype(np.int32)
         assert label.dtype == np.int32
         assert label.ndim == 2
 
-        depth_gt_file = osp.join(files_dir, 'depth_gt.npz')
+        depth_gt_file = osp.join(files_dir, 'depth_obj_g.npz')
         depth_gt = np.load(depth_gt_file)['arr_0']
         depth_gt[depth_gt == 0] = np.nan
         if depth_gt.dtype == np.uint16:
