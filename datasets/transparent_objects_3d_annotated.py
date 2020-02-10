@@ -30,10 +30,12 @@ class TransparentObjects3DAnnotatedDataset(chainer.dataset.DatasetMixin):
     ])
 
     root_dir = osp.expanduser(
-        '~/data/mvtk/transparent_objects/dataset_3d_annotated')
+        '~/data/mvtk/transparent_objects_20200118/dataset_3d_annotated')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
+    # min_value = 0.5
+    # max_value = 5.0
     min_value = 0.5
-    max_value = 5.0
+    max_value = 1.2
 
     def __init__(self, split, aug=False, num_view=1):
         assert split in ['train', 'test']

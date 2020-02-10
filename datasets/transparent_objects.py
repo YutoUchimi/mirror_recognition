@@ -13,7 +13,7 @@ import imgaug.augmenters as iaa
 import mvtk
 
 
-class TransparentObject3DAnnotatedDataset(chainer.dataset.DatasetMixin):
+class TransparentObjectsDataset(chainer.dataset.DatasetMixin):
 
     # TODO(unknown): Get class names from dataset dir.
     class_names = np.array([
@@ -23,19 +23,21 @@ class TransparentObject3DAnnotatedDataset(chainer.dataset.DatasetMixin):
     class_names.setflags(write=0)
 
     _files = set([
-        'depth_obj_y.npz',
+        'depth_obj_n.npz',
         'depth_obj_g.npz',
-        'rgb_obj_y.png',
+        # 'rgb_obj_g2.jpg',
         'mask_obj_g.jpg'
     ])
 
     root_dir = osp.expanduser(
-        '~/data/mvtk/transparent_objects/datasets_all_3d_annotated')
+        '~/data/mvtk/transparent_objects/datasets')
     mean_bgr = np.array([104.00698793, 116.66876762, 122.67891434])
+    # min_value = 0.5
+    # max_value = 5.0
     min_value = 0.5
-    max_value = 5.0
+    max_value = 1.2
 
-    def __init__(self, split, aug=False):
+    def __init__(self, split, aug=False, num_view=1):
         assert split in ['train', 'test']
         self.split = split
         self.aug = aug
@@ -66,12 +68,20 @@ class TransparentObject3DAnnotatedDataset(chainer.dataset.DatasetMixin):
         return examples
 
     def _get_example(self, files_dir, idx):
-        image_file = osp.join(files_dir, 'rgb_obj_y.jpg')
+        if osp.exists(osp.join(files_dir, 'rgb_obj_y.jpg')):
+            image_file = osp.join(files_dir, 'rgb_obj_y.jpg')
+        elif osp.exists(osp.join(files_dir, 'rgb_obj_g2.jpg')):
+            image_file = osp.join(files_dir, 'rgb_obj_g2.jpg')
+        else:
+            image_file = osp.join(files_dir, 'rgb_obj_g.jpg')
         image = skimage.io.imread(image_file)
         assert image.dtype == np.uint8
         assert image.ndim == 3
 
-        depth_file = osp.join(files_dir, 'depth_obj_y.npz')
+        if osp.exists(osp.join(files_dir, 'depth_obj_y.npz')):
+            depth_file = osp.join(files_dir, 'depth_obj_y.npz')
+        else:
+            depth_file = osp.join(files_dir, 'depth_obj_n.npz')
         depth = np.load(depth_file)['arr_0']
         depth[depth == 0] = np.nan
         if depth.dtype == np.uint16:
